@@ -1,0 +1,75 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
+import * as bcrypt from 'bcrypt';
+import { User } from '../users/entities/user.entity';
+import JwtPayload from './interfaces/jwt-payload.interface';
+import { JwtService } from '@nestjs/jwt';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { PostgresErrorCode } from '../database/postgres-errorcodes.enum';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async createAccount(createUserDto: CreateUserDto) {
+    try {
+      createUserDto.password = await this.hashPassword(
+        createUserDto.password,
+      );
+      const newUser = await this.usersService.create(createUserDto);
+      return newUser;
+    } catch (error) {
+      console.error('Error: ', error);
+      if (error?.code === PostgresErrorCode.UniqueViolation) {
+        throw new BadRequestException(
+          error?.detail ?? 'User with that email/username already exists',
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  public async validateUser(email: string, plainTextPassword: string) {
+    try {
+      const user = await this.usersService.fineOneByEmail(email);
+      await this.verifyPassword(plainTextPassword, user.password);
+      return user;
+    } catch (error) {
+      console.log('Error: ', error);
+      throw error;
+    }
+  }
+
+  async login(user: User) {
+    const payload: JwtPayload = {
+      username: user.email,
+      user_id: user.id,
+      email: user.email,
+    };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+      user,
+    };
+  }
+
+  private async verifyPassword(
+    plainTextPassword: string,
+    hashedPassword: string,
+  ) {
+    const isPasswordMatching = await bcrypt.compare(
+      plainTextPassword,
+      hashedPassword,
+    );
+    if (!isPasswordMatching) {
+      throw new BadRequestException('Wrong credentials provided');
+    }
+  }
+
+  private async hashPassword(plainTextPassword) {
+    return await bcrypt.hash(plainTextPassword, 10);
+  }
+}
