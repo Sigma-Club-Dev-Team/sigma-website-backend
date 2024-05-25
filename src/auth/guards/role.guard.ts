@@ -4,7 +4,7 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/role.decorator';
@@ -26,7 +26,7 @@ class RolesGuard implements CanActivate {
     const success = requiredRoles.some((role) => user.roles?.includes(role));
 
     if (!success) {
-      throw new UnauthorizedException(`Forbidden: ${requiredRoles} Only`);
+      throw new ForbiddenException(`Forbidden: ${requiredRoles} Only`);
     }
 
     return success;
