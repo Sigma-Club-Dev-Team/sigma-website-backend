@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, Post, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { User } from '../users/entities/user.entity';
@@ -18,7 +26,7 @@ export class AuthController {
   @Roles(Role.SuperAdmin)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('register/admin')
-  async registerStudent(@Body() createUserDto: CreateUserDto) {
+  async registerAdmin(@Body() createUserDto: CreateUserDto) {
     return new User(await this.authService.createAccount(createUserDto));
   }
 
