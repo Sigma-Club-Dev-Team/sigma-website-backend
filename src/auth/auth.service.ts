@@ -6,6 +6,7 @@ import JwtPayload from './interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { PostgresErrorCode } from '../database/postgres-errorcodes.enum';
+import { UpdatePasswordDto } from './dto/UpdatePassword.dto';
 
 @Injectable()
 export class AuthService {
@@ -56,6 +57,21 @@ export class AuthService {
     };
   }
 
+  async changePassword(user: User, updatePasswordDto: UpdatePasswordDto) {
+    try {
+      // confirm that the old password is correct
+      await this.verifyPassword(updatePasswordDto.old_password, user.password);
+      user.password = await this.hashPassword(updatePasswordDto.new_password);
+      await this.usersService.save(user);
+      return {
+        message: "Password Successfully updated"
+      };
+    } catch (error) {
+      console.log('Error: ', error);
+      throw error;
+    }
+  }
+
   private async verifyPassword(
     plainTextPassword: string,
     hashedPassword: string,
@@ -67,6 +83,7 @@ export class AuthService {
     if (!isPasswordMatching) {
       throw new BadRequestException('Wrong credentials provided');
     }
+    return isPasswordMatching;
   }
 
   private async hashPassword(plainTextPassword) {

@@ -36,4 +36,8 @@ export class UsersService {
     }
     return user;
   }
+
+  async save(user: User) {
+    return await this.userRepository.save(user);
+  }
 }

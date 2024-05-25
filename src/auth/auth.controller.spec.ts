@@ -8,7 +8,7 @@ import {
   buildUserMock,
 } from '../test/factories/user.factory';
 import { User } from '../users/entities/user.entity';
-import { buildLoginDTOMock } from '../test/factories/auth.factory';
+import { buildLoginDTOMock, buildUpdatePasswordDTOMock } from '../test/factories/auth.factory';
 import { RequestWithUser } from './interfaces/request-with-user.interface';
 
 describe('AuthController', () => {
@@ -73,6 +73,30 @@ describe('AuthController', () => {
 
       expect(result).toEqual(expectedResponse);
       expect(authService.login).toHaveBeenCalledWith(req.user);
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should change the password successfully', async () => {
+      const updatePasswordDto = buildUpdatePasswordDTOMock({
+        old_password: 'oldPassword',
+        new_password: 'newPassword',
+      });
+      const mockResponse = { message: 'Password Successfully updated' };
+
+      jest.spyOn(authService, "changePassword").mockResolvedValue(mockResponse);
+
+      const req = {
+        user: buildUserMock({ id: '1', email: 'testuser' }),
+      } as RequestWithUser;
+
+      const result = await authController.changePassword(req, updatePasswordDto)
+
+      expect(result).toEqual(mockResponse);
+      expect(authService.changePassword).toHaveBeenCalledWith(
+        req.user,
+        updatePasswordDto,
+      );
     });
   });
 

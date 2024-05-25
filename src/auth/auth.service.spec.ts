@@ -5,6 +5,7 @@ import { UsersService } from '../users/users.service';
 import { buildCreateUserDtoMock, buildUserMock } from '../test/factories/user.factory';
 import { BadRequestException } from '@nestjs/common';
 import { Role } from '../constants/enums';
+import { buildUpdatePasswordDTOMock } from '../test/factories/auth.factory';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -92,6 +93,93 @@ describe('AuthService', () => {
 
       await service.login(user);
       expect(jwtService.signAsync).toHaveBeenCalled();
+    });
+  });
+
+  describe('changePassword', () => {
+    it('should successfully change the password', async () => {
+      const user = buildUserMock({
+        id: '1',
+        password: 'oldHashedPassword',
+      });
+      const updatePasswordDto = buildUpdatePasswordDTOMock({
+        old_password: 'oldPassword',
+        new_password: 'newPassword',
+      });
+
+      jest.spyOn(service as any, 'verifyPassword').mockResolvedValue(true);
+
+      jest
+        .spyOn(service as any, 'hashPassword')
+        .mockResolvedValue('newHashedPassword');
+
+        jest
+          .spyOn(usersService, 'save')
+          .mockResolvedValue(user);
+
+      const result = await service.changePassword(user, updatePasswordDto);
+
+      expect((service as any).verifyPassword).toHaveBeenCalledWith(
+        'oldPassword',
+        'oldHashedPassword',
+      );
+      expect((service as any).hashPassword).toHaveBeenCalledWith('newPassword');
+      expect(usersService.save).toHaveBeenCalledWith({
+        ...user,
+        password: 'newHashedPassword',
+      });
+      expect(result).toEqual({ message: 'Password Successfully updated' });
+    });
+
+    it('should throw an error if the old password is incorrect', async () => {
+      const user = buildUserMock({
+        id: '1',
+        password: 'oldHashedPassword',
+      });
+      const updatePasswordDto = buildUpdatePasswordDTOMock({
+        old_password: 'incorrectOldPassword',
+        new_password: 'newPassword',
+      });
+
+      jest
+        .spyOn(service as any, 'verifyPassword')
+        .mockRejectedValue(new BadRequestException('Incorrect password'));
+
+      await expect(
+        service.changePassword(user, updatePasswordDto),
+      ).rejects.toThrow('Incorrect password');
+
+      expect((service as any).verifyPassword).toHaveBeenCalledWith(
+        'incorrectOldPassword',
+        'oldHashedPassword',
+      );
+      expect(usersService.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if hashing the new password fails', async () => {
+      const user = buildUserMock({
+        id: '1',
+        password: 'oldHashedPassword',
+      });
+      const updatePasswordDto = buildUpdatePasswordDTOMock({
+        old_password: 'oldPassword',
+        new_password: 'newPassword',
+      });
+
+      jest.spyOn(service as any, 'verifyPassword').mockResolvedValue(true);
+      jest
+        .spyOn(service as any, 'hashPassword')
+        .mockRejectedValue(new BadRequestException('Hashing failed'));
+
+      await expect(
+        service.changePassword(user, updatePasswordDto),
+      ).rejects.toThrow(BadRequestException);
+      expect((service as any).verifyPassword).toHaveBeenCalledWith(
+        'oldPassword',
+        'oldHashedPassword',
+      );
+      expect((service as any).hashPassword).toHaveBeenCalledWith('newPassword');
+      expect(usersService.save).not.toHaveBeenCalled();
     });
   });
 });

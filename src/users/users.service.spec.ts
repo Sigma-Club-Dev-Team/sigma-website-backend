@@ -3,7 +3,10 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { TestBed } from '@automock/jest';
-import { buildCreateUserDtoMock, buildUserMock } from '../test/factories/user.factory';
+import {
+  buildCreateUserDtoMock,
+  buildUserMock,
+} from '../test/factories/user.factory';
 import { User } from './entities/user.entity';
 
 describe('UsersService', () => {
@@ -15,7 +18,7 @@ describe('UsersService', () => {
     const { unit, unitRef } = TestBed.create(UsersService).compile();
 
     service = unit;
-    userRepository = unitRef.get(getRepositoryToken(User) as string);;
+    userRepository = unitRef.get(getRepositoryToken(User) as string);
   });
 
   afterEach(() => {
@@ -88,6 +91,22 @@ describe('UsersService', () => {
       await expect(service.fineOneByEmail(userIdentifier)).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('save', () => {
+    it('should save a user and return the saved user', async () => {
+      const user = buildUserMock({
+        id: '1',
+        email: 'test@example.com',
+      });
+
+      jest.spyOn(userRepository, 'save').mockResolvedValue(user);
+
+      const result = await service.save(user);
+
+      expect(userRepository.save).toHaveBeenCalledWith(user);
+      expect(result).toEqual(user);
     });
   });
 });

@@ -1,5 +1,4 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
-import { Role } from '../../constants/enums';
+import { IsNotEmpty } from 'class-validator';
 
 export class LoginDto {
   @IsNotEmpty()
