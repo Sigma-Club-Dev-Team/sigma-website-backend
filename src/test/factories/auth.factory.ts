@@ -1,4 +1,4 @@
-import { ResetPasswordDto } from "src/auth/dto/ResetPassword.dto";
+import { ResetPasswordDto } from "../../auth/dto/ResetPassword.dto";
 import { UpdatePasswordDto } from "../../auth/dto/UpdatePassword.dto";
 import { LoginDto } from "../../auth/dto/login.dto";
 

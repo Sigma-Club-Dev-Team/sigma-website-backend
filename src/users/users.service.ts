@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -16,8 +16,10 @@ export class UsersService {
     return await this.userRepository.save(newUser);
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+  async findAll(
+    whereClause?: FindOptionsWhere<User> | FindOptionsWhere<User>[],
+  ): Promise<User[]> {
+    return await this.userRepository.find({where: whereClause});
   }
 
   async findOneById(id: string): Promise<User> {

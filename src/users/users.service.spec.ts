@@ -1,6 +1,6 @@
 import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { TestBed } from '@automock/jest';
 import {
@@ -57,6 +57,26 @@ describe('UsersService', () => {
       const users: User[] = [mockUser, buildUserMock()];
       jest.spyOn(userRepository, 'find').mockResolvedValue(users);
       expect(await service.findAll()).toEqual(users);
+    });
+
+    it('should query users with provided whereClause', async () => {
+      const whereClause: FindOptionsWhere<User> = {
+        email: 'user1@example.com',
+      };
+      const users = [
+        buildUserMock({
+          id: '1',
+          email: 'user1@example.com',
+          password: 'password1',
+        }),
+      ];
+
+      jest.spyOn(userRepository, "find").mockResolvedValue(users);
+
+      const result = await service.findAll(whereClause);
+
+      expect(result).toEqual(users);
+      expect(userRepository.find).toHaveBeenCalledWith({ where: whereClause });
     });
   });
 
