@@ -2,6 +2,7 @@ import { TestBed } from '@automock/jest';
 import { UsersController } from './users.controller';
 import { buildUserMock } from '../test/factories/user.factory';
 import { UsersService } from './users.service';
+import { RequestWithUser } from '../auth/interfaces/request-with-user.interface';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -47,4 +48,26 @@ describe('UsersController', () => {
       expect(usersService.findAll).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('fetchMyProfile', () => {
+    it('should return the user profile', async () => {
+      const req = {
+        user: buildUserMock({ id: '1', email: 'user1@example.com' }),
+      } as RequestWithUser;
+
+      expect(await controller.fetchMyProfile(req)).toEqual(req.user);
+    });
+  });
+
+   describe('fetchUserById', () => {
+     it('should return a user by ID', async () => {
+       const userId = '1';
+       const mockUser = buildUserMock({id: userId});
+
+       jest.spyOn(usersService, 'findOneById').mockResolvedValue(mockUser);
+
+       expect(await controller.fetchUserById(userId)).toEqual(mockUser);
+       expect(usersService.findOneById).toHaveBeenCalledWith(userId);
+     });
+   });
 });
