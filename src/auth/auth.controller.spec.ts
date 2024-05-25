@@ -116,6 +116,19 @@ describe('AuthController', () => {
         );
         expect(guards).toContain(JwtAuthGuard);
       });
+
+      it('should have RolesGuard applied to registerAdmin endpoint', () => {
+        const guards = Reflect.getMetadata(
+          '__guards__',
+          authController.registerAdmin,
+        );
+        expect(guards).toContain(RolesGuard);
+        const approvedRoles = Reflect.getMetadata(
+          ROLES_KEY,
+          authController.registerAdmin,
+        );
+        expect(approvedRoles).toContain(Role.SuperAdmin);
+      });
     });
 
     it('should have LocalAuthGuard applied to login endpoint', () => {
