@@ -1,3 +1,4 @@
+import { ResetPasswordDto } from "src/auth/dto/ResetPassword.dto";
 import { UpdatePasswordDto } from "../../auth/dto/UpdatePassword.dto";
 import { LoginDto } from "../../auth/dto/login.dto";
 
@@ -14,6 +15,16 @@ export const buildUpdatePasswordDTOMock = (
 ): UpdatePasswordDto => {
   return {
     old_password: 'oldPassword',
+    new_password: 'newPassword',
+    ...partial,
+  };
+};
+
+export const buildResetPasswordDTOMock = (
+  partial?: Partial<ResetPasswordDto>,
+): ResetPasswordDto => {
+  return {
+    email: "test@email.com",
     new_password: 'newPassword',
     ...partial,
   };

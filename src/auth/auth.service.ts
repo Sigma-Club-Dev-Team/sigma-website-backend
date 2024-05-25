@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { PostgresErrorCode } from '../database/postgres-errorcodes.enum';
 import { UpdatePasswordDto } from './dto/UpdatePassword.dto';
+import { ResetPasswordDto } from './dto/ResetPassword.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,13 +18,10 @@ export class AuthService {
 
   async createAccount(createUserDto: CreateUserDto) {
     try {
-      createUserDto.password = await this.hashPassword(
-        createUserDto.password,
-      );
+      createUserDto.password = await this.hashPassword(createUserDto.password);
       const newUser = await this.usersService.create(createUserDto);
       return newUser;
     } catch (error) {
-      console.error('Error: ', error);
       if (error?.code === PostgresErrorCode.UniqueViolation) {
         throw new BadRequestException(
           error?.detail ?? 'User with that email/username already exists',
@@ -40,7 +38,6 @@ export class AuthService {
       await this.verifyPassword(plainTextPassword, user.password);
       return user;
     } catch (error) {
-      console.log('Error: ', error);
       throw error;
     }
   }
@@ -64,10 +61,23 @@ export class AuthService {
       user.password = await this.hashPassword(updatePasswordDto.new_password);
       await this.usersService.save(user);
       return {
-        message: "Password Successfully updated"
+        message: 'Password Successfully updated',
       };
     } catch (error) {
-      console.log('Error: ', error);
+      throw error;
+    }
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    try {
+      // confirm that the old password is correct
+      const user = await this.usersService.fineOneByEmail(resetPasswordDto.email);
+      user.password = await this.hashPassword(resetPasswordDto.new_password);
+      await this.usersService.save(user);
+      return {
+        message: 'Reset Password Successfull',
+      };
+    } catch (error) {
       throw error;
     }
   }

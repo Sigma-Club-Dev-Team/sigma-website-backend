@@ -10,6 +10,7 @@ import {
 import { User } from '../users/entities/user.entity';
 import {
   buildLoginDTOMock,
+  buildResetPasswordDTOMock,
   buildUpdatePasswordDTOMock,
 } from '../test/factories/auth.factory';
 import { RequestWithUser } from './interfaces/request-with-user.interface';
@@ -107,6 +108,30 @@ describe('AuthController', () => {
     });
   });
 
+  describe('resetPassword', () => {
+    it('should reset the password successfully', async () => {
+      const resetPasswordDto = buildResetPasswordDTOMock({
+        new_password: 'newPassword',
+      });
+      const mockResponse = { message: 'Reset Password Successfull' };
+
+      jest.spyOn(authService, 'resetPassword').mockResolvedValue(mockResponse);
+
+      const req = {
+        user: buildUserMock({ id: '1', email: 'testuser' }),
+      } as RequestWithUser;
+
+      const result = await authController.resetPassword(
+        resetPasswordDto,
+      );
+
+      expect(result).toEqual(mockResponse);
+      expect(authService.resetPassword).toHaveBeenCalledWith(
+        resetPasswordDto,
+      );
+    });
+  });
+
   describe('Guards', () => {
     describe('registerAdmin Guards', () => {
       it('should have JwtAuthGuard applied to registerAdmin endpoint', () => {
@@ -126,6 +151,29 @@ describe('AuthController', () => {
         const approvedRoles = Reflect.getMetadata(
           ROLES_KEY,
           authController.registerAdmin,
+        );
+        expect(approvedRoles).toContain(Role.SuperAdmin);
+      });
+    });
+
+    describe('resetPassword Guards', () => {
+      it('should have JwtAuthGuard applied to resetPassword endpoint', () => {
+        const guards = Reflect.getMetadata(
+          '__guards__',
+          authController.resetPassword,
+        );
+        expect(guards).toContain(JwtAuthGuard);
+      });
+
+      it('should have RolesGuard applied to resetPassword endpoint', () => {
+        const guards = Reflect.getMetadata(
+          '__guards__',
+          authController.resetPassword,
+        );
+        expect(guards).toContain(RolesGuard);
+        const approvedRoles = Reflect.getMetadata(
+          ROLES_KEY,
+          authController.resetPassword,
         );
         expect(approvedRoles).toContain(Role.SuperAdmin);
       });

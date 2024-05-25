@@ -5,7 +5,7 @@ import { UsersService } from '../users/users.service';
 import { buildCreateUserDtoMock, buildUserMock } from '../test/factories/user.factory';
 import { BadRequestException } from '@nestjs/common';
 import { Role } from '../constants/enums';
-import { buildUpdatePasswordDTOMock } from '../test/factories/auth.factory';
+import { buildResetPasswordDTOMock, buildUpdatePasswordDTOMock } from '../test/factories/auth.factory';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -180,6 +180,88 @@ describe('AuthService', () => {
       );
       expect((service as any).hashPassword).toHaveBeenCalledWith('newPassword');
       expect(usersService.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('should reset the password successfully', async () => {
+      const resetPasswordDto = buildResetPasswordDTOMock({
+        email: 'test@example.com',
+        new_password: 'newPassword',
+      });
+
+      const user = buildUserMock({
+        email: resetPasswordDto.email,
+        password: 'oldPasswordHash'
+      });
+
+      jest.spyOn(usersService, 'fineOneByEmail').mockResolvedValue(user);
+      jest
+        .spyOn(service as any, 'hashPassword')
+        .mockResolvedValue('newHashedPassword');
+      jest.spyOn(usersService, 'save').mockResolvedValue({
+        ...user,
+        password: 'newHashedPassword',
+      });
+      
+      const result = await service.resetPassword(resetPasswordDto);
+
+      expect(result).toEqual({ message: 'Reset Password Successfull' });
+      expect(usersService.fineOneByEmail).toHaveBeenCalledWith(
+        resetPasswordDto.email,
+      );
+      expect(usersService.save).toHaveBeenCalledWith({
+        ...user,
+        password: 'newHashedPassword',
+      });
+    });
+
+    it('should throw an error if user is not found', async () => {
+      const resetPasswordDto = buildResetPasswordDTOMock({
+        email: 'test@example.com',
+        new_password: 'newPassword',
+      });
+
+      jest.spyOn(usersService, 'fineOneByEmail').mockRejectedValue(
+        new Error('User not found'),
+      );      
+
+      await expect(service.resetPassword(resetPasswordDto)).rejects.toThrow(
+        'User not found',
+      );
+      expect(usersService.fineOneByEmail).toHaveBeenCalledWith(
+        resetPasswordDto.email,
+      );
+      expect(usersService.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if saving the user fails', async () => {
+      const resetPasswordDto = buildResetPasswordDTOMock({
+        email: 'test@example.com',
+        new_password: 'newPassword',
+      });
+
+      const user = buildUserMock({
+        email: resetPasswordDto.email,
+        password: 'oldPasswordHash'
+      });
+
+      jest.spyOn(usersService, 'fineOneByEmail').mockResolvedValue(user);
+      jest
+        .spyOn(service as any, 'hashPassword')
+        .mockResolvedValue('newHashedPassword');
+      jest.spyOn(usersService, 'save').mockRejectedValue(new Error('Save failed'));
+
+      await expect(service.resetPassword(resetPasswordDto)).rejects.toThrow(
+        'Save failed',
+      );
+      expect(usersService.fineOneByEmail).toHaveBeenCalledWith(
+        resetPasswordDto.email,
+      );
+      expect(usersService.save).toHaveBeenCalledWith({
+        ...user,
+        password: 'newHashedPassword',
+      });
     });
   });
 });
