@@ -107,6 +107,11 @@ describe('AuthService', () => {
         new_password: 'newPassword',
       });
 
+      const updatedUser = {
+        ...user,
+        password: 'newHashedPassword',
+      };
+
       jest.spyOn(service as any, 'verifyPassword').mockResolvedValue(true);
 
       jest
@@ -115,7 +120,7 @@ describe('AuthService', () => {
 
         jest
           .spyOn(usersService, 'save')
-          .mockResolvedValue(user);
+          .mockResolvedValue(updatedUser);
 
       const result = await service.changePassword(user, updatePasswordDto);
 
@@ -128,7 +133,7 @@ describe('AuthService', () => {
         ...user,
         password: 'newHashedPassword',
       });
-      expect(result).toEqual({ message: 'Password Successfully updated' });
+      expect(result).toEqual(updatedUser);
     });
 
     it('should throw an error if the old password is incorrect', async () => {
@@ -195,18 +200,20 @@ describe('AuthService', () => {
         password: 'oldPasswordHash'
       });
 
+      const expectedResponse = {
+        ...user,
+        password: 'newHashedPassword',
+      };
+
       jest.spyOn(usersService, 'fineOneByEmail').mockResolvedValue(user);
       jest
         .spyOn(service as any, 'hashPassword')
         .mockResolvedValue('newHashedPassword');
-      jest.spyOn(usersService, 'save').mockResolvedValue({
-        ...user,
-        password: 'newHashedPassword',
-      });
+      jest.spyOn(usersService, 'save').mockResolvedValue(expectedResponse);
       
       const result = await service.resetPassword(resetPasswordDto);
 
-      expect(result).toEqual({ message: 'Reset Password Successfull' });
+      expect(result).toEqual(expectedResponse);
       expect(usersService.fineOneByEmail).toHaveBeenCalledWith(
         resetPasswordDto.email,
       );
