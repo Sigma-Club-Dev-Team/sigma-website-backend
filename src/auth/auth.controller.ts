@@ -36,7 +36,10 @@ export class AuthController {
     @Req() req: RequestWithUser,
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
-    return await this.authService.changePassword(req.user, updatePasswordDto);
+    await this.authService.changePassword(req.user, updatePasswordDto);
+    return {
+      message: 'Password Successfully updated',
+    };
   }
 
   @Roles(Role.SuperAdmin)
@@ -45,6 +48,9 @@ export class AuthController {
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
   ) {
-    return await this.authService.resetPassword(resetPasswordDto);
+    await this.authService.resetPassword(resetPasswordDto);
+    return {
+        message: 'Reset Password Successfull',
+      };
   }
 }

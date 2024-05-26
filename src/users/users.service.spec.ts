@@ -1,10 +1,11 @@
 import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { TestBed } from '@automock/jest';
 import {
   buildCreateUserDtoMock,
+  buildUpdateUserDtoMock,
   buildUserMock,
 } from '../test/factories/user.factory';
 import { User } from './entities/user.entity';
@@ -58,6 +59,26 @@ describe('UsersService', () => {
       jest.spyOn(userRepository, 'find').mockResolvedValue(users);
       expect(await service.findAll()).toEqual(users);
     });
+
+    it('should query users with provided whereClause', async () => {
+      const whereClause: FindOptionsWhere<User> = {
+        email: 'user1@example.com',
+      };
+      const users = [
+        buildUserMock({
+          id: '1',
+          email: 'user1@example.com',
+          password: 'password1',
+        }),
+      ];
+
+      jest.spyOn(userRepository, "find").mockResolvedValue(users);
+
+      const result = await service.findAll(whereClause);
+
+      expect(result).toEqual(users);
+      expect(userRepository.find).toHaveBeenCalledWith({ where: whereClause });
+    });
   });
 
   describe('findOneById', () => {
@@ -107,6 +128,52 @@ describe('UsersService', () => {
 
       expect(userRepository.save).toHaveBeenCalledWith(user);
       expect(result).toEqual(user);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a user', async () => {
+      const userId = 'user-id';
+      const updateUserDto = buildUpdateUserDtoMock({ first_name: "updated_first_name" });
+      const mockUser = buildUserMock({ id: userId });
+      const updatedUserMock = buildUserMock({
+        ...mockUser,
+        ...updateUserDto,
+      });
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(updatedUserMock);
+      jest
+        .spyOn(userRepository, 'save')
+        .mockResolvedValueOnce(updatedUserMock);
+
+      const result = await service.update(userId, updateUserDto);
+
+      expect(result).toBe(updatedUserMock);
+      expect(userRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining(updateUserDto),
+      );
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a course', async () => {
+      const userId = 'user-id';
+      const mockUser = buildUserMock({ id: userId });
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(mockUser);
+      jest.spyOn(userRepository, 'delete').mockResolvedValueOnce(undefined);
+
+      await service.remove(userId);
+
+      expect(userRepository.delete).toHaveBeenCalledWith(userId);
+    });
+
+    it('should throw NotFoundException if course not found', async () => {
+      const userId = 'user-id';
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(undefined);
+
+      await expect(service.remove(userId)).rejects.toThrow(NotFoundException);
     });
   });
 });

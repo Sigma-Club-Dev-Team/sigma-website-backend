@@ -89,11 +89,14 @@ describe('AuthController', () => {
       });
       const mockResponse = { message: 'Password Successfully updated' };
 
-      jest.spyOn(authService, 'changePassword').mockResolvedValue(mockResponse);
-
       const req = {
         user: buildUserMock({ id: '1', email: 'testuser' }),
       } as RequestWithUser;
+
+      jest.spyOn(authService, 'changePassword').mockResolvedValue({
+        ...req.user,
+        password: 'newHashedPassword',
+      });
 
       const result = await authController.changePassword(
         req,
@@ -113,17 +116,19 @@ describe('AuthController', () => {
       const resetPasswordDto = buildResetPasswordDTOMock({
         new_password: 'newPassword',
       });
-      const mockResponse = { message: 'Reset Password Successfull' };
-
-      jest.spyOn(authService, 'resetPassword').mockResolvedValue(mockResponse);
-
       const req = {
         user: buildUserMock({ id: '1', email: 'testuser' }),
       } as RequestWithUser;
 
-      const result = await authController.resetPassword(
-        resetPasswordDto,
-      );
+      const mockResponse = { message: 'Reset Password Successfull' };
+
+      jest.spyOn(authService, 'resetPassword').mockResolvedValue({
+        ...req.user,
+        password: 'newHashedPassword',
+      });
+
+
+      const result = await authController.resetPassword(resetPasswordDto);
 
       expect(result).toEqual(mockResponse);
       expect(authService.resetPassword).toHaveBeenCalledWith(

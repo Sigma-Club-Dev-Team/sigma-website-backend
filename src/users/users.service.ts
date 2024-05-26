@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -16,8 +17,10 @@ export class UsersService {
     return await this.userRepository.save(newUser);
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+  async findAll(
+    whereClause?: FindOptionsWhere<User> | FindOptionsWhere<User>[],
+  ): Promise<User[]> {
+    return await this.userRepository.find({ where: whereClause });
   }
 
   async findOneById(id: string): Promise<User> {
@@ -39,5 +42,26 @@ export class UsersService {
 
   async save(user: User) {
     return await this.userRepository.save(user);
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.findOneById(id);
+
+    const userUpdate = {
+      ...user,
+      ...updateUserDto,
+    };
+
+    await this.userRepository.save(userUpdate);
+
+    return await this.findOneById(user.id);
+  }
+
+  async remove(id: string) {
+    const course = await this.findOneById(id);
+    if (!course) {
+      throw new NotFoundException('User does not exist!');
+    }
+    await this.userRepository.delete(id);
   }
 }

@@ -59,10 +59,7 @@ export class AuthService {
       // confirm that the old password is correct
       await this.verifyPassword(updatePasswordDto.old_password, user.password);
       user.password = await this.hashPassword(updatePasswordDto.new_password);
-      await this.usersService.save(user);
-      return {
-        message: 'Password Successfully updated',
-      };
+      return await this.usersService.save(user);
     } catch (error) {
       throw error;
     }
@@ -73,10 +70,7 @@ export class AuthService {
       // confirm that the old password is correct
       const user = await this.usersService.fineOneByEmail(resetPasswordDto.email);
       user.password = await this.hashPassword(resetPasswordDto.new_password);
-      await this.usersService.save(user);
-      return {
-        message: 'Reset Password Successfull',
-      };
+      return await this.usersService.save(user);
     } catch (error) {
       throw error;
     }
