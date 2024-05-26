@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { SigmaQuizService } from './sigma-quiz.service';
 import { CreateSigmaQuizDto } from './dto/create-sigma-quiz.dto';
 import { UpdateSigmaQuizDto } from './dto/update-sigma-quiz.dto';
@@ -16,5 +26,15 @@ export class SigmaQuizController {
   @Post()
   create(@Body() createSigmaQuizDto: CreateSigmaQuizDto) {
     return this.sigmaQuizService.create(createSigmaQuizDto);
+  }
+
+  @Get()
+  findAll() {
+    return this.sigmaQuizService.findAll();
+  }
+
+  @Get(':id')
+  findSigmaQuizById(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.sigmaQuizService.findOneById(id);
   }
 }

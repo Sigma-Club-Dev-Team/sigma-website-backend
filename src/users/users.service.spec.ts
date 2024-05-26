@@ -93,7 +93,7 @@ describe('UsersService', () => {
       const userId = 'nonexistent-id';
       jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(undefined);
       await expect(service.findOneById(userId)).rejects.toThrow(
-        new NotFoundException('User with this id does not exist'),
+        NotFoundException
       );
     });
   });

@@ -2,13 +2,13 @@ import { TestBed } from '@automock/jest';
 import { SigmaQuizService } from './sigma-quiz.service';
 import { SigmaQuiz } from './entities/sigma-quiz.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import {
   buildCreateSigmaQuizDtoMock,
   buildSigmaQuizMock,
 } from '../test/factories/sigma-quiz.factory';
 import { PostgresErrorCode } from '../database/postgres-errorcodes.enum';
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('SigmaQuizService', () => {
   let service: SigmaQuizService;
@@ -19,6 +19,10 @@ describe('SigmaQuizService', () => {
 
     service = unit;
     sigmaQuizRepo = unitRef.get(getRepositoryToken(SigmaQuiz) as string);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -90,6 +94,45 @@ describe('SigmaQuizService', () => {
       await expect(service.create(createSigmaQuizDto)).rejects.toThrow(error);
       expect(sigmaQuizRepo.create).toHaveBeenCalled();
       expect(sigmaQuizRepo.save).toHaveBeenCalled();
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return an array of Sigma Quizes', async () => {
+      const sigmaQuizes = [buildSigmaQuizMock(), buildSigmaQuizMock()];
+      jest.spyOn(sigmaQuizRepo, 'find').mockResolvedValue(sigmaQuizes);
+      expect(await service.findAll()).toEqual(sigmaQuizes);
+    });
+
+    it('should query Sigma Quizes with provided whereClause', async () => {
+      const whereClause: FindOptionsWhere<SigmaQuiz> = {
+        date: new Date(),
+      };
+      const sigmaQuizes = [buildSigmaQuizMock()];
+
+      jest.spyOn(sigmaQuizRepo, 'find').mockResolvedValue(sigmaQuizes);
+
+      const result = await service.findAll(whereClause);
+
+      expect(result).toEqual(sigmaQuizes);
+      expect(sigmaQuizRepo.find).toHaveBeenCalledWith({ where: whereClause });
+    });
+  });
+
+  describe('findOneById', () => {
+    it('should return the Sigma Quiz with the provided id', async () => {
+      const quizId = '1';
+      const sigmaQuiz = buildSigmaQuizMock();
+      jest.spyOn(sigmaQuizRepo, 'findOneBy').mockResolvedValue(sigmaQuiz);
+      expect(await service.findOneById(quizId)).toBe(sigmaQuiz);
+    });
+
+    it('should throw HttpStatus.NOT_FOUND if Sigma Quiz with provided id does not exist', async () => {
+      const userId = 'nonexistent-id';
+      jest.spyOn(sigmaQuizRepo, 'findOneBy').mockResolvedValue(undefined);
+      await expect(service.findOneById(userId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

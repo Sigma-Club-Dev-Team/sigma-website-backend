@@ -1,9 +1,13 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateSigmaQuizDto } from './dto/create-sigma-quiz.dto';
 import { UpdateSigmaQuizDto } from './dto/update-sigma-quiz.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SigmaQuiz } from './entities/sigma-quiz.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { getYear } from 'date-fns';
 import { PostgresErrorCode } from '../database/postgres-errorcodes.enum';
 
@@ -13,7 +17,7 @@ export class SigmaQuizService {
     @InjectRepository(SigmaQuiz)
     private readonly sigmaQuizRepo: Repository<SigmaQuiz>,
   ) {}
-  
+
   async create(createSigmaQuizDto: CreateSigmaQuizDto) {
     try {
       const sigmaQuiz = this.sigmaQuizRepo.create({
@@ -34,5 +38,19 @@ export class SigmaQuizService {
 
       throw error;
     }
+  }
+
+  async findAll(
+    whereClause?: FindOptionsWhere<SigmaQuiz> | FindOptionsWhere<SigmaQuiz>[],
+  ): Promise<SigmaQuiz[]> {
+    return await this.sigmaQuizRepo.find({ where: whereClause });
+  }
+
+  async findOneById(id: string): Promise<SigmaQuiz> {
+    const sigmaQuiz = await this.sigmaQuizRepo.findOneBy({ id });
+    if (!sigmaQuiz) {
+      throw new NotFoundException('Sigma Quiz with this id does not exist');
+    }
+    return sigmaQuiz;
   }
 }
