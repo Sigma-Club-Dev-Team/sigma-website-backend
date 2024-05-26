@@ -1,10 +1,11 @@
-import { Controller, Get, Param, ParseUUIDPipe, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Put, Req, UseGuards } from '@nestjs/common';
 import { Roles } from '../auth/decorators/role.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import RolesGuard from '../auth/guards/role.guard';
 import { Role } from '../constants/enums';
 import { UsersService } from './users.service';
-import { RequestWithUser } from 'src/auth/interfaces/request-with-user.interface';
+import { RequestWithUser } from '../auth/interfaces/request-with-user.interface';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -28,5 +29,24 @@ export class UsersController {
   @Get(':id')
   async fetchUserById(@Param('id', new ParseUUIDPipe()) id: string) {
     return await this.userService.findOneById(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/me')
+  async updateMyProfile(
+    @Req() req: RequestWithUser,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return await this.userService.update(req.user.id, updateUserDto);
+  }
+
+  @Roles(Role.SuperAdmin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Put(':id')
+  async updateUserById(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return await this.userService.update(id, updateUserDto);
   }
 }

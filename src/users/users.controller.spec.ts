@@ -1,6 +1,6 @@
 import { TestBed } from '@automock/jest';
 import { UsersController } from './users.controller';
-import { buildUserMock } from '../test/factories/user.factory';
+import { buildUpdateUserDtoMock, buildUserMock } from '../test/factories/user.factory';
 import { UsersService } from './users.service';
 import { RequestWithUser } from '../auth/interfaces/request-with-user.interface';
 
@@ -70,4 +70,55 @@ describe('UsersController', () => {
        expect(usersService.findOneById).toHaveBeenCalledWith(userId);
      });
    });
+
+    describe('updateMyProfile', () => {
+      it('should update the profile of the current user', async () => {
+        const updateUserDto = buildUpdateUserDtoMock({
+          email: 'updated@example.com',
+        });
+        const mockUser = buildUserMock();
+        const req: RequestWithUser = {
+          user: mockUser,
+        } as RequestWithUser;
+
+        const expectedResponse = {
+          ...mockUser,
+          ...updateUserDto,
+        };
+
+        jest
+          .spyOn(usersService, 'update')
+          .mockResolvedValueOnce(expectedResponse);
+
+        const result = await controller.updateMyProfile(req, updateUserDto);
+        expect(result).toEqual(expectedResponse);
+        expect(usersService.update).toHaveBeenCalledWith(
+          mockUser.id,
+          updateUserDto,
+        );
+      });
+    });
+
+    describe('updateUserById', () => {
+      it('should update a user by ID', async () => {
+        const updateUserDto = buildUpdateUserDtoMock({
+          email: 'updated@example.com',
+        });
+        const userId = '1';
+        const mockUser = buildUserMock({id: "1"});
+
+        const expectedResponse = {
+          ...mockUser,
+          ...updateUserDto,
+        };
+
+        jest
+          .spyOn(usersService, 'update')
+          .mockResolvedValueOnce(expectedResponse);
+
+        const result = await controller.updateUserById(userId, updateUserDto);
+        expect(result).toEqual({ ...mockUser, ...updateUserDto });
+        expect(usersService.update).toHaveBeenCalledWith(userId, updateUserDto);
+      });
+    });
 });

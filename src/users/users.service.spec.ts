@@ -5,6 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestBed } from '@automock/jest';
 import {
   buildCreateUserDtoMock,
+  buildUpdateUserDtoMock,
   buildUserMock,
 } from '../test/factories/user.factory';
 import { User } from './entities/user.entity';
@@ -127,6 +128,32 @@ describe('UsersService', () => {
 
       expect(userRepository.save).toHaveBeenCalledWith(user);
       expect(result).toEqual(user);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a user', async () => {
+      const userId = 'user-id';
+      const updateUserDto = buildUpdateUserDtoMock({ first_name: "updated_first_name" });
+      const mockUser = buildUserMock({ id: userId });
+      const updatedUserMock = buildUserMock({
+        ...mockUser,
+        ...updateUserDto,
+      });
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(updatedUserMock);
+      jest
+        .spyOn(userRepository, 'save')
+        .mockResolvedValueOnce(updatedUserMock);
+
+      const result = await service.update(userId, updateUserDto);
+
+      expect(result).toBe(updatedUserMock);
+      expect(userRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining(updateUserDto),
+      );
     });
   });
 });
