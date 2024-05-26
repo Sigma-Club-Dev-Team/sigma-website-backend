@@ -47,4 +47,14 @@ export class SigmaQuizController {
   ) {
     return this.sigmaQuizService.update(id, updateSigmaQuizDto);
   }
+
+  @Roles(Role.SuperAdmin, Role.QuizMaster)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Delete(':id')
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
+    await this.sigmaQuizService.remove(id);
+    return {
+      message: 'Successful',
+    };
+  }
 }

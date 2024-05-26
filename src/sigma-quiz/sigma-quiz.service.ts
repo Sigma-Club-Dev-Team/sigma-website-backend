@@ -66,4 +66,12 @@ export class SigmaQuizService {
 
     return await this.findOneById(quiz.id);
   }
+
+  async remove(id: string) {
+    const course = await this.findOneById(id);
+    if (!course) {
+      throw new NotFoundException('SigmaQuiz does not exist!');
+    }
+    await this.sigmaQuizRepo.delete(id);
+  }
 }

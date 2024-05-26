@@ -162,4 +162,24 @@ describe('SigmaQuizService', () => {
       );
     });
   });
+
+  describe('remove', () => {
+    it('should remove a SigmaQuiz', async () => {
+      const quizId = 'quiz-id';
+      const mockQuiz = buildSigmaQuizMock({ id: quizId });
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(mockQuiz);
+      jest.spyOn(sigmaQuizRepo, 'delete').mockResolvedValueOnce(undefined);
+
+      await service.remove(quizId);
+
+      expect(sigmaQuizRepo.delete).toHaveBeenCalledWith(quizId);
+    });
+
+    it('should throw NotFoundException if course not found', async () => {
+      const quizId = 'quiz-id';
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(undefined);
+
+      await expect(service.remove(quizId)).rejects.toThrow(NotFoundException);
+    });
+  });
 });
