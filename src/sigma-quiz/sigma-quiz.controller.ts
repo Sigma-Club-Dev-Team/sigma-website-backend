@@ -3,11 +3,11 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
   ParseUUIDPipe,
+  Put,
 } from '@nestjs/common';
 import { SigmaQuizService } from './sigma-quiz.service';
 import { CreateSigmaQuizDto } from './dto/create-sigma-quiz.dto';
@@ -36,5 +36,15 @@ export class SigmaQuizController {
   @Get(':id')
   findSigmaQuizById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.sigmaQuizService.findOneById(id);
+  }
+
+  @Roles(Role.SuperAdmin, Role.QuizMaster)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Put(':id')
+  update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateSigmaQuizDto: UpdateSigmaQuizDto,
+  ) {
+    return this.sigmaQuizService.update(id, updateSigmaQuizDto);
   }
 }

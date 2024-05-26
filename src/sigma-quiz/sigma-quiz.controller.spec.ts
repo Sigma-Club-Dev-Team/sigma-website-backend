@@ -1,7 +1,7 @@
 import { TestBed } from '@automock/jest';
 import { SigmaQuizController } from './sigma-quiz.controller';
 import { SigmaQuizService } from './sigma-quiz.service';
-import { buildCreateSigmaQuizDtoMock, buildSigmaQuizMock } from '../test/factories/sigma-quiz.factory';
+import { buildCreateSigmaQuizDtoMock, buildSigmaQuizMock, buildUpdateSigmaQuizDtoMock } from '../test/factories/sigma-quiz.factory';
 
 describe('SigmaQuizController', () => {
   let controller: SigmaQuizController;
@@ -76,6 +76,29 @@ describe('SigmaQuizController', () => {
 
        expect(await controller.findSigmaQuizById(quizId)).toEqual(mockQuiz);
        expect(sigmaQuizService.findOneById).toHaveBeenCalledWith(quizId);
+     });
+   });
+
+   describe('update', () => {
+     it('should update a SigmaQuiz by ID', async () => {
+       const updateSigmaQuizDto = buildUpdateSigmaQuizDtoMock({
+         title: 'updated_title',
+       });
+       const quizId = '1';
+       const mockQuiz = buildSigmaQuizMock({ id: '1' });
+
+       const expectedResponse = {
+         ...mockQuiz,
+         ...updateSigmaQuizDto,
+       };
+
+       jest
+         .spyOn(sigmaQuizService, 'update')
+         .mockResolvedValueOnce(expectedResponse);
+
+       const result = await controller.update(quizId, updateSigmaQuizDto);
+       expect(result).toEqual({ ...mockQuiz, ...updateSigmaQuizDto });
+       expect(sigmaQuizService.update).toHaveBeenCalledWith(quizId, updateSigmaQuizDto);
      });
    });
 });

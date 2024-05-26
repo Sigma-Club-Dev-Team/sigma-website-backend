@@ -6,6 +6,7 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import {
   buildCreateSigmaQuizDtoMock,
   buildSigmaQuizMock,
+  buildUpdateSigmaQuizDtoMock,
 } from '../test/factories/sigma-quiz.factory';
 import { PostgresErrorCode } from '../database/postgres-errorcodes.enum';
 import { ConflictException, NotFoundException } from '@nestjs/common';
@@ -132,6 +133,32 @@ describe('SigmaQuizService', () => {
       jest.spyOn(sigmaQuizRepo, 'findOneBy').mockResolvedValue(undefined);
       await expect(service.findOneById(userId)).rejects.toThrow(
         NotFoundException,
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('should update a SigmaQuiz', async () => {
+      const quizId = 'quiz-id';
+      const updateSigmaQuizDto = buildUpdateSigmaQuizDtoMock({
+        title: 'updated_title',
+      });
+      const mockSigmaQuiz = buildSigmaQuizMock({ id: quizId });
+      const updatedSigmaQuizMock = buildSigmaQuizMock({
+        ...mockSigmaQuiz,
+        ...updateSigmaQuizDto,
+      });
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValueOnce(mockSigmaQuiz)
+        .mockResolvedValueOnce(updatedSigmaQuizMock);
+      jest.spyOn(sigmaQuizRepo, 'save').mockResolvedValueOnce(updatedSigmaQuizMock);
+
+      const result = await service.update(quizId, updateSigmaQuizDto);
+
+      expect(result).toBe(updatedSigmaQuizMock);
+      expect(sigmaQuizRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining(updateSigmaQuizDto),
       );
     });
   });

@@ -53,4 +53,17 @@ export class SigmaQuizService {
     }
     return sigmaQuiz;
   }
+
+  async update(id: string, updateSigmaQuizDto: UpdateSigmaQuizDto) {
+    const quiz = await this.findOneById(id);
+
+    const sigmaQuizUpdate = {
+      ...quiz,
+      ...updateSigmaQuizDto,
+    };
+
+    await this.sigmaQuizRepo.save(sigmaQuizUpdate);
+
+    return await this.findOneById(quiz.id);
+  }
 }
