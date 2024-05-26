@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Put, Req, UseGuards } from '@nestjs/common';
 import { Roles } from '../auth/decorators/role.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import RolesGuard from '../auth/guards/role.guard';
@@ -48,5 +48,15 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return await this.userService.update(id, updateUserDto);
+  }
+
+  @Roles(Role.SuperAdmin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Delete(':id')
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
+    await this.userService.remove(id);
+    return {
+      message: 'Successful',
+    };
   }
 }

@@ -56,4 +56,12 @@ export class UsersService {
 
     return await this.findOneById(user.id);
   }
+
+  async remove(id: string) {
+    const course = await this.findOneById(id);
+    if (!course) {
+      throw new NotFoundException('User does not exist!');
+    }
+    await this.userRepository.delete(id);
+  }
 }

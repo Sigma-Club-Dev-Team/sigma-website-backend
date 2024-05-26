@@ -156,4 +156,24 @@ describe('UsersService', () => {
       );
     });
   });
+
+  describe('remove', () => {
+    it('should remove a course', async () => {
+      const userId = 'user-id';
+      const mockUser = buildUserMock({ id: userId });
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(mockUser);
+      jest.spyOn(userRepository, 'delete').mockResolvedValueOnce(undefined);
+
+      await service.remove(userId);
+
+      expect(userRepository.delete).toHaveBeenCalledWith(userId);
+    });
+
+    it('should throw NotFoundException if course not found', async () => {
+      const userId = 'user-id';
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(undefined);
+
+      await expect(service.remove(userId)).rejects.toThrow(NotFoundException);
+    });
+  });
 });

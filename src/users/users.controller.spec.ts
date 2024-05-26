@@ -121,4 +121,16 @@ describe('UsersController', () => {
         expect(usersService.update).toHaveBeenCalledWith(userId, updateUserDto);
       });
     });
+
+    describe('remove', () => {
+      it('should remove a user', async () => {
+        const userId = 'user-id';
+        jest.spyOn(usersService, 'remove').mockResolvedValueOnce(undefined);
+
+        const result = await controller.remove(userId);
+
+        expect(result).toEqual({ message: 'Successful' });
+        expect(usersService.remove).toHaveBeenCalledWith(userId);
+      });
+    });
 });
