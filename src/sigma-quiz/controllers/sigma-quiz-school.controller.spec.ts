@@ -4,6 +4,7 @@ import { SigmaQuizSchoolService } from '../services/sigma-quiz-school.service';
 import {
   mockCreateSigmaQuizSchoolDto,
   mockSigmaQuizSchool,
+  mockUpdateSigmaQuizSchoolDto,
 } from '../../test/factories/sigma-quiz.factory';
 
 describe('SigmaQuizSchoolController', () => {
@@ -75,6 +76,32 @@ describe('SigmaQuizSchoolController', () => {
 
       expect(await controller.findSigmaQuizById(schoolId)).toEqual(mockSchool);
       expect(sigmaQuizSchService.findOneById).toHaveBeenCalledWith(schoolId);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a SigmaQuiz School by ID', async () => {
+      const updateSchoolDto = mockUpdateSigmaQuizSchoolDto({
+        name: 'updated_NAME',
+      });
+      const schoolId = '1';
+      const schoolMock = mockSigmaQuizSchool({ id: '1' });
+
+      const expectedResponse = {
+        ...schoolMock,
+        ...updateSchoolDto,
+      };
+
+      jest
+        .spyOn(sigmaQuizSchService, 'update')
+        .mockResolvedValueOnce(expectedResponse);
+
+      const result = await controller.update(schoolId, updateSchoolDto);
+      expect(result).toEqual({ ...schoolMock, ...updateSchoolDto });
+      expect(sigmaQuizSchService.update).toHaveBeenCalledWith(
+        schoolId,
+        updateSchoolDto,
+      );
     });
   });
 });

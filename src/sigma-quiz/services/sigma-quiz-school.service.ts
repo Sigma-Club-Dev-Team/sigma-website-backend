@@ -47,8 +47,17 @@ export class SigmaQuizSchoolService {
     return sigmaQuizSch;
   }
 
-  update(id: number, updateSigmaQuizSchoolDto: UpdateSigmaQuizSchoolDto) {
-    return `This action updates a #${id} sigmaQuizSchool`;
+  async update(id: string, updateSigmaQuizSchoolDto: UpdateSigmaQuizSchoolDto) {
+    const school = await this.findOneById(id);
+
+    const schoolUpdate = {
+      ...school,
+      ...updateSigmaQuizSchoolDto,
+    };
+
+    await this.sigmaQuizSchRepo.save(schoolUpdate);
+
+    return await this.findOneById(school.id);
   }
 
   remove(id: number) {

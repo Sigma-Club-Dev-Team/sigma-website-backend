@@ -6,6 +6,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import {
   mockSigmaQuizSchool,
   mockCreateSigmaQuizSchoolDto,
+  mockUpdateSigmaQuizSchoolDto,
 } from '../../test/factories/sigma-quiz.factory';
 import { NotFoundException } from '@nestjs/common';
 
@@ -102,6 +103,34 @@ describe('SigmaQuizSchoolService', () => {
       jest.spyOn(sigmaQuizSchRepo, 'findOneBy').mockResolvedValue(undefined);
       await expect(service.findOneById(schoolId)).rejects.toThrow(
         NotFoundException,
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('should update a SigmaQuiz School', async () => {
+      const schoolId = 'school-id';
+      const updateSchoolDto = mockUpdateSigmaQuizSchoolDto({
+        name: 'updated_name',
+      });
+      const schoolMock = mockSigmaQuizSchool({ id: schoolId });
+      const updatedSchoolMock = mockSigmaQuizSchool({
+        ...schoolMock,
+        ...updateSchoolDto,
+      });
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValueOnce(schoolMock)
+        .mockResolvedValueOnce(updatedSchoolMock);
+      jest
+        .spyOn(sigmaQuizSchRepo, 'save')
+        .mockResolvedValueOnce(updatedSchoolMock);
+
+      const result = await service.update(schoolId, updateSchoolDto);
+
+      expect(result).toBe(updatedSchoolMock);
+      expect(sigmaQuizSchRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining(updateSchoolDto),
       );
     });
   });
