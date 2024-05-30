@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { SigmaQuizService } from './sigma-quiz.service';
-import { SigmaQuizController } from './sigma-quiz.controller';
+import { SigmaQuizService } from './services/sigma-quiz.service';
+import { SigmaQuizController } from './controllers/sigma-quiz.controller';
 import { SigmaQuiz } from './entities/sigma-quiz.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
