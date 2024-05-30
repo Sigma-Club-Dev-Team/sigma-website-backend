@@ -1,9 +1,13 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateSigmaQuizSchoolDto } from '../dto/create-sigma-quiz-school.dto';
 import { UpdateSigmaQuizSchoolDto } from '../dto/update-sigma-quiz-school.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SigmaQuizSchool } from '../entities/sigma-quiz-school.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 
 @Injectable()
@@ -47,6 +51,13 @@ export class SigmaQuizSchoolService {
       );
     }
     return sigmaQuizSch;
+  }
+
+  async search(name: string): Promise<SigmaQuizSchool[]> {
+    const searchTextLower = name ? name.toLowerCase() : '';
+    return await this.findAll({
+      name: ILike(`%${searchTextLower}%`),
+    });
   }
 
   async update(id: string, updateSigmaQuizSchoolDto: UpdateSigmaQuizSchoolDto) {

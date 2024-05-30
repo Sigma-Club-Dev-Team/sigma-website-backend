@@ -8,6 +8,8 @@ import {
   UseGuards,
   ParseUUIDPipe,
   Put,
+  Query,
+  Req,
 } from '@nestjs/common';
 import { SigmaQuizSchoolService } from '../services/sigma-quiz-school.service';
 import { CreateSigmaQuizSchoolDto } from '../dto/create-sigma-quiz-school.dto';
@@ -33,6 +35,11 @@ export class SigmaQuizSchoolController {
   @Get()
   findAll() {
     return this.sigmaQuizSchoolService.findAll();
+  }
+
+  @Get('/search')
+  async search(@Query('name') searchText: string) {
+    return await this.sigmaQuizSchoolService.search(searchText);
   }
 
   @Get(':id')

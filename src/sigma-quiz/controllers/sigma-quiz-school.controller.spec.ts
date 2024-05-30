@@ -118,4 +118,17 @@ describe('SigmaQuizSchoolController', () => {
       expect(sigmaQuizSchService.remove).toHaveBeenCalledWith(quizId);
     });
   });
+
+  describe('search', () => {
+    it('should search for schools', async () => {
+      const searchText = 'search-text';
+      const mockSchools = [mockSigmaQuizSchool(), mockSigmaQuizSchool()];
+      jest.spyOn(sigmaQuizSchService, 'search').mockResolvedValueOnce(mockSchools);
+
+      const result = await controller.search(searchText);
+
+      expect(result).toBe(mockSchools);
+      expect(sigmaQuizSchService.search).toHaveBeenCalledWith(searchText);
+    });
+  });
 });

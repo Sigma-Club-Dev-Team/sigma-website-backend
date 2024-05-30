@@ -1,6 +1,6 @@
 import { TestBed } from '@automock/jest';
 import { SigmaQuizSchoolService } from './sigma-quiz-school.service';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { SigmaQuizSchool } from '../entities/sigma-quiz-school.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
@@ -154,4 +154,59 @@ describe('SigmaQuizSchoolService', () => {
       await expect(service.remove(schoolId)).rejects.toThrow(NotFoundException);
     });
   });
+
+   describe('search', () => {
+     it('should call findAll with correct parameters when name is provided', async () => {
+       const searchText = 'Test School';
+       const searchTextLower = searchText.toLowerCase();
+       const findAllSpy = jest.spyOn(service, 'findAll').mockResolvedValue([]);
+
+       await service.search(searchText);
+
+       expect(findAllSpy).toHaveBeenCalledWith({
+         name: ILike(`%${searchTextLower}%`),
+       });
+     });
+
+     it('should call findAll with empty string when name is not provided', async () => {
+       const searchText = '';
+       const findAllSpy = jest.spyOn(service, 'findAll').mockResolvedValue([]);
+
+       await service.search(searchText);
+
+       expect(findAllSpy).toHaveBeenCalledWith({
+         name: ILike(`%${searchText}%`),
+       });
+     });
+
+     it('should return the result from findAll', async () => {
+       const result = [
+         mockSigmaQuizSchool({ id: '1', name: 'Test School' }),
+       ];
+       
+       jest.spyOn(service, 'findAll').mockResolvedValue(result);
+
+       const searchText = 'Test';
+       const searchTextLower = searchText.toLowerCase();
+       const response = await service.search(searchText);
+
+       expect(response).toEqual(result);
+       expect(service.findAll).toHaveBeenCalledWith({
+         name: ILike(`%${searchTextLower}%`),
+       });
+     });
+
+     it('should handle errors gracefully', async () => {
+       const searchText = 'Test';
+       const searchTextLower = searchText.toLowerCase();
+       jest
+         .spyOn(service, 'findAll')
+         .mockRejectedValue(new Error('Some error'));
+
+       await expect(service.search(searchText)).rejects.toThrow('Some error');
+       expect(service.findAll).toHaveBeenCalledWith({
+         name: ILike(`%${searchTextLower}%`),
+       });
+     });
+   });
 });
