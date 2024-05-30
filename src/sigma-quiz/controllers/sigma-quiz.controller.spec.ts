@@ -44,7 +44,7 @@ describe('SigmaQuizController', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of users', async () => {
+    it('should return an array of quizes', async () => {
       const result = [
         buildSigmaQuizMock({
           id: '1',

@@ -9,7 +9,7 @@ import { SigmaQuizSchoolController } from './controllers/sigma-quiz-school.contr
 
 @Module({
   imports: [TypeOrmModule.forFeature([SigmaQuiz, SigmaQuizSchool])],
-  controllers: [SigmaQuizController, SigmaQuizSchoolController],
+  controllers: [SigmaQuizSchoolController, SigmaQuizController],
   providers: [SigmaQuizService, SigmaQuizSchoolService],
 })
 export class SigmaQuizModule {}

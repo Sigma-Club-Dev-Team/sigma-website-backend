@@ -1,8 +1,11 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
+  Param,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { SigmaQuizSchoolService } from '../services/sigma-quiz-school.service';
 import { CreateSigmaQuizSchoolDto } from '../dto/create-sigma-quiz-school.dto';
@@ -24,4 +27,13 @@ export class SigmaQuizSchoolController {
     return this.sigmaQuizSchoolService.create(createSigmaQuizSchoolDto);
   }
 
+  @Get()
+  findAll() {
+    return this.sigmaQuizSchoolService.findAll();
+  }
+
+  @Get(':id')
+  findSigmaQuizById(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.sigmaQuizSchoolService.findOneById(id);
+  }
 }

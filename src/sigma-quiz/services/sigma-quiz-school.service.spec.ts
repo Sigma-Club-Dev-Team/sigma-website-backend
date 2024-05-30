@@ -1,12 +1,13 @@
 import { TestBed } from '@automock/jest';
 import { SigmaQuizSchoolService } from './sigma-quiz-school.service';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { SigmaQuizSchool } from '../entities/sigma-quiz-school.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
   mockSigmaQuizSchool,
   mockCreateSigmaQuizSchoolDto,
 } from '../../test/factories/sigma-quiz.factory';
+import { NotFoundException } from '@nestjs/common';
 
 describe('SigmaQuizSchoolService', () => {
   let service: SigmaQuizSchoolService;
@@ -30,7 +31,7 @@ describe('SigmaQuizSchoolService', () => {
   });
 
   describe('create', () => {
-    it('should create and save a new sigma quiz successfully', async () => {
+    it('should create and save a new sigma quiz school successfully', async () => {
       const createSigmaQuizSchoolDto = mockCreateSigmaQuizSchoolDto();
       const savedSigmaQuizSchool = mockSigmaQuizSchool(
         createSigmaQuizSchoolDto,
@@ -63,6 +64,45 @@ describe('SigmaQuizSchoolService', () => {
       await expect(service.create(createSigmaQuizDto)).rejects.toThrow(error);
       expect(sigmaQuizSchRepo.create).toHaveBeenCalled();
       expect(sigmaQuizSchRepo.save).toHaveBeenCalled();
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return an array of Sigma Quiz Schools', async () => {
+      const sigmaQuizSchools = [mockSigmaQuizSchool(), mockSigmaQuizSchool()];
+      jest.spyOn(sigmaQuizSchRepo, 'find').mockResolvedValue(sigmaQuizSchools);
+      expect(await service.findAll()).toEqual(sigmaQuizSchools);
+    });
+
+    it('should query Sigma Quiz Schools with provided whereClause', async () => {
+      const whereClause: FindOptionsWhere<SigmaQuizSchool> = {
+        state: 'Lasgidi',
+      };
+      const sigmaQuizes = [mockSigmaQuizSchool({state: "Lasgidi"})];
+
+      jest.spyOn(sigmaQuizSchRepo, 'find').mockResolvedValue(sigmaQuizes);
+
+      const result = await service.findAll(whereClause);
+
+      expect(result).toEqual(sigmaQuizes);
+      expect(sigmaQuizSchRepo.find).toHaveBeenCalledWith({ where: whereClause });
+    });
+  });
+
+  describe('findOneById', () => {
+    it('should return the Sigma Quiz School with the provided id', async () => {
+      const schoolId = '1';
+      const sigmaQuizSch = mockSigmaQuizSchool();
+      jest.spyOn(sigmaQuizSchRepo, 'findOneBy').mockResolvedValue(sigmaQuizSch);
+      expect(await service.findOneById(schoolId)).toBe(sigmaQuizSch);
+    });
+
+    it('should throw NotFound Exception if Sigma Quiz School with provided id does not exist', async () => {
+      const schoolId = 'nonexistent-id';
+      jest.spyOn(sigmaQuizSchRepo, 'findOneBy').mockResolvedValue(undefined);
+      await expect(service.findOneById(schoolId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

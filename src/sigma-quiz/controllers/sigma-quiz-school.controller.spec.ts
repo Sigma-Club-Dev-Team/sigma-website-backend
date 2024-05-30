@@ -37,4 +37,44 @@ describe('SigmaQuizSchoolController', () => {
       );
     });
   });
+
+  describe('findAll', () => {
+    it('should return an array of sigma quiz schools', async () => {
+      const result = [
+        mockSigmaQuizSchool({
+          id: '1',
+        }),
+        mockSigmaQuizSchool({
+          id: '2',
+        }),
+      ];
+
+      jest.spyOn(sigmaQuizSchService, 'findAll').mockResolvedValue(result);
+
+      expect(await controller.findAll()).toEqual(result);
+      expect(sigmaQuizSchService.findAll).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle errors', async () => {
+      const error = new Error('An error occurred');
+      jest.spyOn(sigmaQuizSchService, 'findAll').mockRejectedValue(error);
+
+      await expect(controller.findAll()).rejects.toThrow(error);
+      expect(sigmaQuizSchService.findAll).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('fetchSigmaQuizSchoolById', () => {
+    it('should return a SigmaQuizSchool by ID', async () => {
+      const schoolId = '1';
+      const mockSchool = mockSigmaQuizSchool({ id: schoolId });
+
+      jest
+        .spyOn(sigmaQuizSchService, 'findOneById')
+        .mockResolvedValue(mockSchool);
+
+      expect(await controller.findSigmaQuizById(schoolId)).toEqual(mockSchool);
+      expect(sigmaQuizSchService.findOneById).toHaveBeenCalledWith(schoolId);
+    });
+  });
 });
