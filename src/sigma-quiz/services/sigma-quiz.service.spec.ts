@@ -1,14 +1,14 @@
 import { TestBed } from '@automock/jest';
 import { SigmaQuizService } from './sigma-quiz.service';
-import { SigmaQuiz } from './entities/sigma-quiz.entity';
+import { SigmaQuiz } from '../entities/sigma-quiz.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import {
   buildCreateSigmaQuizDtoMock,
   buildSigmaQuizMock,
   buildUpdateSigmaQuizDtoMock,
-} from '../test/factories/sigma-quiz.factory';
-import { PostgresErrorCode } from '../database/postgres-errorcodes.enum';
+} from '../../test/factories/sigma-quiz.factory';
+import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('SigmaQuizService', () => {
@@ -152,7 +152,9 @@ describe('SigmaQuizService', () => {
         .spyOn(service, 'findOneById')
         .mockResolvedValueOnce(mockSigmaQuiz)
         .mockResolvedValueOnce(updatedSigmaQuizMock);
-      jest.spyOn(sigmaQuizRepo, 'save').mockResolvedValueOnce(updatedSigmaQuizMock);
+      jest
+        .spyOn(sigmaQuizRepo, 'save')
+        .mockResolvedValueOnce(updatedSigmaQuizMock);
 
       const result = await service.update(quizId, updateSigmaQuizDto);
 

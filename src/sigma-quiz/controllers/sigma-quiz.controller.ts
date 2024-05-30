@@ -9,13 +9,13 @@ import {
   ParseUUIDPipe,
   Put,
 } from '@nestjs/common';
-import { SigmaQuizService } from './sigma-quiz.service';
-import { CreateSigmaQuizDto } from './dto/create-sigma-quiz.dto';
-import { UpdateSigmaQuizDto } from './dto/update-sigma-quiz.dto';
-import { Roles } from '../auth/decorators/role.decorator';
-import { Role } from '../constants/enums';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import RolesGuard from '../auth/guards/role.guard';
+import { SigmaQuizService } from '../services/sigma-quiz.service';
+import { CreateSigmaQuizDto } from '../dto/create-sigma-quiz.dto';
+import { UpdateSigmaQuizDto } from '../dto/update-sigma-quiz.dto';
+import { Roles } from '../../auth/decorators/role.decorator';
+import { Role } from '../../constants/enums';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import RolesGuard from '../../auth/guards/role.guard';
 
 @Controller('sigma-quiz')
 export class SigmaQuizController {

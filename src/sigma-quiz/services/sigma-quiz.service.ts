@@ -3,13 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateSigmaQuizDto } from './dto/create-sigma-quiz.dto';
-import { UpdateSigmaQuizDto } from './dto/update-sigma-quiz.dto';
+import { CreateSigmaQuizDto } from '../dto/create-sigma-quiz.dto';
+import { UpdateSigmaQuizDto } from '../dto/update-sigma-quiz.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SigmaQuiz } from './entities/sigma-quiz.entity';
+import { SigmaQuiz } from '../entities/sigma-quiz.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { getYear } from 'date-fns';
-import { PostgresErrorCode } from '../database/postgres-errorcodes.enum';
+import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 
 @Injectable()
 export class SigmaQuizService {

@@ -1,11 +1,11 @@
 import { TestBed } from '@automock/jest';
 import { SigmaQuizController } from './sigma-quiz.controller';
-import { SigmaQuizService } from './sigma-quiz.service';
+import { SigmaQuizService } from '../services/sigma-quiz.service';
 import {
   buildCreateSigmaQuizDtoMock,
   buildSigmaQuizMock,
   buildUpdateSigmaQuizDtoMock,
-} from '../test/factories/sigma-quiz.factory';
+} from '../../test/factories/sigma-quiz.factory';
 
 describe('SigmaQuizController', () => {
   let controller: SigmaQuizController;
@@ -44,7 +44,7 @@ describe('SigmaQuizController', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of users', async () => {
+    it('should return an array of quizes', async () => {
       const result = [
         buildSigmaQuizMock({
           id: '1',
