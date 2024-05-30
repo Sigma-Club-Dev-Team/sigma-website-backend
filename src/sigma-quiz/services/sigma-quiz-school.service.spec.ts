@@ -134,4 +134,24 @@ describe('SigmaQuizSchoolService', () => {
       );
     });
   });
+
+  describe('remove', () => {
+    it('should remove a SigmaQuiz School', async () => {
+      const schoolId = 'school-id';
+      const schoolMock = mockSigmaQuizSchool({ id: schoolId });
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(schoolMock);
+      jest.spyOn(sigmaQuizSchRepo, 'delete').mockResolvedValueOnce(undefined);
+
+      await service.remove(schoolId);
+
+      expect(sigmaQuizSchRepo.delete).toHaveBeenCalledWith(schoolId);
+    });
+
+    it('should throw NotFoundException if course not found', async () => {
+      const schoolId = 'school-id';
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(undefined);
+
+      await expect(service.remove(schoolId)).rejects.toThrow(NotFoundException);
+    });
+  });
 });

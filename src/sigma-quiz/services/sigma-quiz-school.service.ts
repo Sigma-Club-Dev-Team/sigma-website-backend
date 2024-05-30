@@ -42,7 +42,9 @@ export class SigmaQuizSchoolService {
   async findOneById(id: string): Promise<SigmaQuizSchool> {
     const sigmaQuizSch = await this.sigmaQuizSchRepo.findOneBy({ id });
     if (!sigmaQuizSch) {
-      throw new NotFoundException('Sigma Quiz School with this id does not exist');
+      throw new NotFoundException(
+        'Sigma Quiz School with this id does not exist',
+      );
     }
     return sigmaQuizSch;
   }
@@ -60,7 +62,11 @@ export class SigmaQuizSchoolService {
     return await this.findOneById(school.id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} sigmaQuizSchool`;
+  async remove(id: string) {
+    const course = await this.findOneById(id);
+    if (!course) {
+      throw new NotFoundException('School does not exist!');
+    }
+    await this.sigmaQuizSchRepo.delete(id);
   }
 }

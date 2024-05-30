@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Param,
+  Delete,
   UseGuards,
   ParseUUIDPipe,
   Put,
@@ -47,5 +48,15 @@ export class SigmaQuizSchoolController {
     @Body() updateSigmaQuizSchoolDto: UpdateSigmaQuizSchoolDto,
   ) {
     return this.sigmaQuizSchoolService.update(id, updateSigmaQuizSchoolDto);
+  }
+
+  @Roles(Role.SuperAdmin, Role.QuizMaster, Role.Adhoc)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Delete(':id')
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
+    await this.sigmaQuizSchoolService.remove(id);
+    return {
+      message: 'Successful',
+    };
   }
 }

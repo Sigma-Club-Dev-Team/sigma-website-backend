@@ -104,4 +104,18 @@ describe('SigmaQuizSchoolController', () => {
       );
     });
   });
+
+  describe('remove', () => {
+    it('should remove a SigmaQuiz', async () => {
+      const quizId = 'quiz-id';
+      jest
+        .spyOn(sigmaQuizSchService, 'remove')
+        .mockResolvedValueOnce(undefined);
+
+      const result = await controller.remove(quizId);
+
+      expect(result).toEqual({ message: 'Successful' });
+      expect(sigmaQuizSchService.remove).toHaveBeenCalledWith(quizId);
+    });
+  });
 });
