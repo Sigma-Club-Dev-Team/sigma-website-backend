@@ -17,6 +17,14 @@ describe('SigmaQuizService', () => {
   let service: SigmaQuizService;
   let sigmaQuizRepo: Repository<SigmaQuiz>;
   let quizRoundService: QuizRoundService;
+  const queryBuilderMock = {
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    setFindOptions: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
+    setParameters: jest.fn().mockReturnThis(),
+    getOne: jest
+      .fn(),
+  };
 
   beforeEach(async () => {
     const { unit, unitRef } = TestBed.create(SigmaQuizService).compile();
@@ -128,13 +136,24 @@ describe('SigmaQuizService', () => {
     it('should return the Sigma Quiz with the provided id', async () => {
       const quizId = '1';
       const sigmaQuiz = buildSigmaQuizMock();
+      jest
+        .spyOn(sigmaQuizRepo, 'createQueryBuilder')
+        .mockReturnValue(queryBuilderMock as any);
+
+        queryBuilderMock.getOne.mockResolvedValue(sigmaQuiz)
+
       jest.spyOn(sigmaQuizRepo, 'findOneBy').mockResolvedValue(sigmaQuiz);
       expect(await service.findOneById(quizId)).toBe(sigmaQuiz);
     });
 
     it('should throw HttpStatus.NOT_FOUND if Sigma Quiz with provided id does not exist', async () => {
       const userId = 'nonexistent-id';
-      jest.spyOn(sigmaQuizRepo, 'findOneBy').mockResolvedValue(undefined);
+      jest
+        .spyOn(sigmaQuizRepo, 'createQueryBuilder')
+        .mockReturnValue(queryBuilderMock as any);
+
+      queryBuilderMock.getOne.mockResolvedValue(undefined);
+      
       await expect(service.findOneById(userId)).rejects.toThrow(
         NotFoundException,
       );

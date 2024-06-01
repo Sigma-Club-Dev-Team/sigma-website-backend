@@ -53,7 +53,12 @@ export class SigmaQuizService {
   }
 
   async findOneById(id: string): Promise<SigmaQuiz> {
-    const sigmaQuiz = await this.sigmaQuizRepo.findOneBy({ id });
+    const queryBuilder = this.sigmaQuizRepo
+      .createQueryBuilder('quiz')
+      .leftJoinAndSelect('quiz.rounds', 'rounds')
+      .setFindOptions({ where: { id } });
+    const sigmaQuiz = await queryBuilder.getOne();
+
     if (!sigmaQuiz) {
       throw new NotFoundException('Sigma Quiz with this id does not exist');
     }
