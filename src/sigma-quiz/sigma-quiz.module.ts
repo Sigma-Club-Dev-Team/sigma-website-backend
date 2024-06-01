@@ -6,10 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SigmaQuizSchoolService } from './services/sigma-quiz-school.service';
 import { SigmaQuizSchool } from './entities/sigma-quiz-school.entity';
 import { SigmaQuizSchoolController } from './controllers/sigma-quiz-school.controller';
+import { QuizRound } from './entities/quiz-round.entity';
+import { QuizRoundController } from './controllers/quiz-round.controller';
+import { QuizRoundService } from './services/quiz-round.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SigmaQuiz, SigmaQuizSchool])],
-  controllers: [SigmaQuizSchoolController, SigmaQuizController],
-  providers: [SigmaQuizService, SigmaQuizSchoolService],
+  imports: [TypeOrmModule.forFeature([SigmaQuiz, SigmaQuizSchool, QuizRound])],
+  controllers: [SigmaQuizSchoolController, SigmaQuizController, QuizRoundController],
+  providers: [SigmaQuizService, SigmaQuizSchoolService, QuizRoundService],
 })
 export class SigmaQuizModule {}
