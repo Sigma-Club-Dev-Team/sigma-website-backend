@@ -7,19 +7,23 @@ import {
   buildCreateSigmaQuizDtoMock,
   buildSigmaQuizMock,
   buildUpdateSigmaQuizDtoMock,
+  mockQuizRound,
 } from '../../test/factories/sigma-quiz.factory';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { QuizRoundService } from './quiz-round.service';
 
 describe('SigmaQuizService', () => {
   let service: SigmaQuizService;
   let sigmaQuizRepo: Repository<SigmaQuiz>;
+  let quizRoundService: QuizRoundService;
 
   beforeEach(async () => {
     const { unit, unitRef } = TestBed.create(SigmaQuizService).compile();
 
     service = unit;
     sigmaQuizRepo = unitRef.get(getRepositoryToken(SigmaQuiz) as string);
+    quizRoundService = unitRef.get(QuizRoundService);
   });
 
   afterEach(() => {
@@ -182,6 +186,49 @@ describe('SigmaQuizService', () => {
       jest.spyOn(service, 'findOneById').mockResolvedValueOnce(undefined);
 
       await expect(service.remove(quizId)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('fetchQuizRounds', () => {
+    it('should return quiz rounds when quiz exists', async () => {
+      const quizId = '1';
+      const quiz = { id: quizId } as SigmaQuiz;
+      const quizRounds = [
+        mockQuizRound({ id: '1' }),
+        mockQuizRound({ id: '2' }),
+      ];
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quiz);
+      const findAllSpy = jest
+        .spyOn(quizRoundService, 'findAll')
+        .mockResolvedValue(quizRounds);
+
+      const result = await service.fetchQuizRounds(quizId);
+
+      expect(result).toEqual(quizRounds);
+      expect(service.findOneById).toHaveBeenCalledWith(quizId);
+      expect(findAllSpy).toHaveBeenCalledWith({ quiz: { id: quizId } });
+    });
+
+    it('should throw an error when quiz does not exist', async () => {
+      const quizId = '1';
+      jest
+        .spyOn(service, 'findOneById')
+        .mockRejectedValue(new NotFoundException());
+
+      await expect(service.fetchQuizRounds(quizId)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should handle errors gracefully', async () => {
+      const quizId = '1';
+      jest
+        .spyOn(service, 'findOneById')
+        .mockRejectedValue(new Error('Some error'));
+
+      await expect(service.fetchQuizRounds(quizId)).rejects.toThrow(
+        'Some error',
+      );
     });
   });
 });

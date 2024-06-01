@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -16,6 +18,7 @@ export class QuizRoundService {
   constructor(
     @InjectRepository(QuizRound)
     private readonly quizRoundRepo: Repository<QuizRound>,
+    @Inject(forwardRef(() => SigmaQuizService))
     private readonly sigmaQuizService: SigmaQuizService,
   ) {}
 

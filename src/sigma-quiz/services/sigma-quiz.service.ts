@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -10,12 +12,16 @@ import { SigmaQuiz } from '../entities/sigma-quiz.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { getYear } from 'date-fns';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
+import { QuizRoundService } from './quiz-round.service';
+import { QuizRound } from '../entities/quiz-round.entity';
 
 @Injectable()
 export class SigmaQuizService {
   constructor(
     @InjectRepository(SigmaQuiz)
     private readonly sigmaQuizRepo: Repository<SigmaQuiz>,
+    @Inject(forwardRef(() => QuizRoundService))
+    private readonly quizRoundService: QuizRoundService,
   ) {}
 
   async create(createSigmaQuizDto: CreateSigmaQuizDto) {
@@ -73,5 +79,11 @@ export class SigmaQuizService {
       throw new NotFoundException('SigmaQuiz does not exist!');
     }
     await this.sigmaQuizRepo.delete(id);
+  }
+
+  async fetchQuizRounds(quidId: string): Promise<QuizRound[]> {
+    const quiz = await this.findOneById(quidId);
+    const quizRounds = await this.quizRoundService.findAll({quiz: {id: quiz.id}});
+    return quizRounds;
   }
 }

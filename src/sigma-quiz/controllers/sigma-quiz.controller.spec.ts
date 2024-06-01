@@ -5,7 +5,9 @@ import {
   buildCreateSigmaQuizDtoMock,
   buildSigmaQuizMock,
   buildUpdateSigmaQuizDtoMock,
+  mockQuizRound,
 } from '../../test/factories/sigma-quiz.factory';
+import { NotFoundException } from '@nestjs/common';
 
 describe('SigmaQuizController', () => {
   let controller: SigmaQuizController;
@@ -116,6 +118,33 @@ describe('SigmaQuizController', () => {
 
       expect(result).toEqual({ message: 'Successful' });
       expect(sigmaQuizService.remove).toHaveBeenCalledWith(quizId);
+    });
+  });
+
+  describe('fetchQuizRounds', () => {
+    it('should return quiz rounds', async () => {
+      const quizId = '123e4567-e89b-12d3-a456-426614174000';
+      const quizRounds = [
+        mockQuizRound({ id: '1' }),
+        mockQuizRound({ id: '2' }),
+      ];
+      jest.spyOn(sigmaQuizService, 'fetchQuizRounds').mockResolvedValue(quizRounds);
+
+      const result = await controller.fetchQuizRounds(quizId);
+
+      expect(result).toEqual(quizRounds);
+      expect(sigmaQuizService.fetchQuizRounds).toHaveBeenCalledWith(quizId);
+    });
+
+    it('should throw an error when SigmaQuizService.fetchQuizRounds throws an error', async () => {
+      const quizId = '123e4567-e89b-12d3-a456-426614174000';
+      jest
+        .spyOn(sigmaQuizService, 'fetchQuizRounds')
+        .mockRejectedValue(new NotFoundException());
+
+      await expect(controller.fetchQuizRounds(quizId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
