@@ -1,6 +1,6 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 import { QuizRound } from '../entities/quiz-round.entity';
 import { CreateQuizRoundDto } from '../dto/create-quiz-round.dto';
@@ -11,12 +11,14 @@ export class QuizRoundService {
   constructor(
     @InjectRepository(QuizRound)
     private readonly quizRoundRepo: Repository<QuizRound>,
-    private readonly sigmaQuizService: SigmaQuizService
+    private readonly sigmaQuizService: SigmaQuizService,
   ) {}
 
   async create(createQuizRoundDto: CreateQuizRoundDto) {
     try {
-        const quiz = await this.sigmaQuizService.findOneById(createQuizRoundDto.quizId);
+      const quiz = await this.sigmaQuizService.findOneById(
+        createQuizRoundDto.quizId,
+      );
       const quizRound = this.quizRoundRepo.create(createQuizRoundDto);
 
       quizRound.quiz = quiz;
@@ -31,5 +33,21 @@ export class QuizRoundService {
 
       throw error;
     }
+  }
+
+  async findAll(
+    whereClause?: FindOptionsWhere<QuizRound> | FindOptionsWhere<QuizRound>[],
+  ): Promise<QuizRound[]> {
+    return await this.quizRoundRepo.find({ where: whereClause });
+  }
+
+  async findOneById(id: string): Promise<QuizRound> {
+    const quizRound = await this.quizRoundRepo.findOneBy({ id });
+    if (!quizRound) {
+      throw new NotFoundException(
+        'Quiz Round with this id does not exist',
+      );
+    }
+    return quizRound;
   }
 }

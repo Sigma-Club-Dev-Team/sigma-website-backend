@@ -22,7 +22,7 @@ describe('QuizRoundController', () => {
   });
 
   describe('create', () => {
-    it('should create a new SigmaQuiz', async () => {
+    it('should create a new QuizRound', async () => {
       const createQuizRoundDto = mockCreateQuizRoundDto();
 
       const result = mockQuizRound(createQuizRoundDto);
@@ -31,6 +31,22 @@ describe('QuizRoundController', () => {
 
       expect(await controller.create(createQuizRoundDto)).toEqual(result);
       expect(quizRoundService.create).toHaveBeenCalledWith(createQuizRoundDto);
+    });
+  });
+
+  describe('fetchQuizRoundById', () => {
+    it('should return a Sigma QuizRound by ID', async () => {
+      const quizRoundId = '1';
+      const quizRoundMock = mockQuizRound({ id: quizRoundId });
+
+      jest
+        .spyOn(quizRoundService, 'findOneById')
+        .mockResolvedValue(quizRoundMock);
+
+      expect(await controller.findQuizRoundById(quizRoundId)).toEqual(
+        quizRoundMock,
+      );
+      expect(quizRoundService.findOneById).toHaveBeenCalledWith(quizRoundId);
     });
   });
 });

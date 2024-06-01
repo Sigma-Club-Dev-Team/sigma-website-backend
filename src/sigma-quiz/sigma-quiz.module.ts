@@ -12,7 +12,11 @@ import { QuizRoundService } from './services/quiz-round.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([SigmaQuiz, SigmaQuizSchool, QuizRound])],
-  controllers: [SigmaQuizSchoolController, SigmaQuizController, QuizRoundController],
+  controllers: [
+    SigmaQuizSchoolController,
+    QuizRoundController,
+    SigmaQuizController,
+  ],
   providers: [SigmaQuizService, SigmaQuizSchoolService, QuizRoundService],
 })
 export class SigmaQuizModule {}

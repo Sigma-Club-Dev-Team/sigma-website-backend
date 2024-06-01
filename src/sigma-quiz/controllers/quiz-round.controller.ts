@@ -3,6 +3,9 @@ import {
   Post,
   Body,
   UseGuards,
+  Get,
+  Param,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { Roles } from '../../auth/decorators/role.decorator';
 import { Role } from '../../constants/enums';
@@ -13,9 +16,7 @@ import { CreateQuizRoundDto } from '../dto/create-quiz-round.dto';
 
 @Controller('sigma-quiz/rounds')
 export class QuizRoundController {
-  constructor(
-    private readonly quizRoundService: QuizRoundService,
-  ) {}
+  constructor(private readonly quizRoundService: QuizRoundService) {}
 
   @Roles(Role.SuperAdmin, Role.QuizMaster, Role.Adhoc)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -24,4 +25,8 @@ export class QuizRoundController {
     return this.quizRoundService.create(createQuizRoundDto);
   }
 
+  @Get(':id')
+  findQuizRoundById(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.quizRoundService.findOneById(id);
+  }
 }

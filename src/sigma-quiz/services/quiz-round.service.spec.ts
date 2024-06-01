@@ -1,5 +1,5 @@
 import { TestBed } from '@automock/jest';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
   mockCreateQuizRoundDto,
@@ -7,6 +7,7 @@ import {
 } from '../../test/factories/sigma-quiz.factory';
 import { QuizRoundService } from './quiz-round.service';
 import { QuizRound } from '../entities/quiz-round.entity';
+import { NotFoundException } from '@nestjs/common';
 
 describe('QuizRoundService', () => {
   let service: QuizRoundService;
@@ -59,6 +60,47 @@ describe('QuizRoundService', () => {
       await expect(service.create(createQuizRoundDto)).rejects.toThrow(error);
       expect(quizRoundRepo.create).toHaveBeenCalled();
       expect(quizRoundRepo.save).toHaveBeenCalled();
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return an array of QuizRounds', async () => {
+      const quizRounds = [mockQuizRound(), mockQuizRound()];
+      jest.spyOn(quizRoundRepo, 'find').mockResolvedValue(quizRounds);
+      expect(await service.findAll()).toEqual(quizRounds);
+    });
+
+    it('should query QuizRounds with provided whereClause', async () => {
+      const whereClause: FindOptionsWhere<QuizRound> = {
+        round_number: 1,
+      };
+      const quizRounds = [mockQuizRound({ round_number: 1 })];
+
+      jest.spyOn(quizRoundRepo, 'find').mockResolvedValue(quizRounds);
+
+      const result = await service.findAll(whereClause);
+
+      expect(result).toEqual(quizRounds);
+      expect(quizRoundRepo.find).toHaveBeenCalledWith({
+        where: whereClause,
+      });
+    });
+  });
+
+  describe('findOneById', () => {
+    it('should return the QuizRound with the provided id', async () => {
+      const quizRoundId = '1';
+      const quizRound = mockQuizRound();
+      jest.spyOn(quizRoundRepo, 'findOneBy').mockResolvedValue(quizRound);
+      expect(await service.findOneById(quizRoundId)).toBe(quizRound);
+    });
+
+    it('should throw NotFound Exception if QuizRound with provided id does not exist', async () => {
+      const quizRoundId = 'nonexistent-id';
+      jest.spyOn(quizRoundRepo, 'findOneBy').mockResolvedValue(undefined);
+      await expect(service.findOneById(quizRoundId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
