@@ -2,6 +2,7 @@ import { TestBed } from '@automock/jest';
 import {
   mockCreateQuizRoundDto,
   mockQuizRound,
+  mockUpdateQuizRoundDto,
 } from '../../test/factories/sigma-quiz.factory';
 import { QuizRoundController } from './quiz-round.controller';
 import { QuizRoundService } from '../services/quiz-round.service';
@@ -47,6 +48,32 @@ describe('QuizRoundController', () => {
         quizRoundMock,
       );
       expect(quizRoundService.findOneById).toHaveBeenCalledWith(quizRoundId);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a QuizRound by ID', async () => {
+      const updateSchoolDto = mockUpdateQuizRoundDto({
+        name: 'updated_NAME',
+      });
+      const schoolId = '1';
+      const schoolMock = mockQuizRound({ id: '1' });
+
+      const expectedResponse = {
+        ...schoolMock,
+        ...updateSchoolDto,
+      };
+
+      jest
+        .spyOn(quizRoundService, 'update')
+        .mockResolvedValueOnce(expectedResponse);
+
+      const result = await controller.update(schoolId, updateSchoolDto);
+      expect(result).toEqual({ ...schoolMock, ...updateSchoolDto });
+      expect(quizRoundService.update).toHaveBeenCalledWith(
+        schoolId,
+        updateSchoolDto,
+      );
     });
   });
 });

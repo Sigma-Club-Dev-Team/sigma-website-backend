@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import {
   mockCreateQuizRoundDto,
   mockQuizRound,
+  mockUpdateQuizRoundDto,
 } from '../../test/factories/sigma-quiz.factory';
 import { QuizRoundService } from './quiz-round.service';
 import { QuizRound } from '../entities/quiz-round.entity';
@@ -33,18 +34,12 @@ describe('QuizRoundService', () => {
       const createQuizRoundDto = mockCreateQuizRoundDto();
       const savedQuizRound = mockQuizRound(createQuizRoundDto);
 
-      jest
-        .spyOn(quizRoundRepo, 'create')
-        .mockReturnValue(savedQuizRound);
-      jest
-        .spyOn(quizRoundRepo, 'save')
-        .mockResolvedValue(savedQuizRound);
+      jest.spyOn(quizRoundRepo, 'create').mockReturnValue(savedQuizRound);
+      jest.spyOn(quizRoundRepo, 'save').mockResolvedValue(savedQuizRound);
 
       const result = await service.create(createQuizRoundDto);
       expect(result).toEqual(savedQuizRound);
-      expect(quizRoundRepo.create).toHaveBeenCalledWith(
-        createQuizRoundDto,
-      );
+      expect(quizRoundRepo.create).toHaveBeenCalledWith(createQuizRoundDto);
       expect(quizRoundRepo.save).toHaveBeenCalledWith(savedQuizRound);
     });
 
@@ -100,6 +95,32 @@ describe('QuizRoundService', () => {
       jest.spyOn(quizRoundRepo, 'findOneBy').mockResolvedValue(undefined);
       await expect(service.findOneById(quizRoundId)).rejects.toThrow(
         NotFoundException,
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('should update a QuizRound', async () => {
+      const quizRoundId = 'quiz-round-id';
+      const updateQuizRoundDto = mockUpdateQuizRoundDto({
+        name: 'updated_name',
+      });
+      const quizRoundMock = mockQuizRound({ id: quizRoundId });
+      const updatedQuizRound = mockQuizRound({
+        ...quizRoundMock,
+        ...updateQuizRoundDto,
+      });
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValueOnce(quizRoundMock)
+        .mockResolvedValueOnce(updatedQuizRound);
+      jest.spyOn(quizRoundRepo, 'save').mockResolvedValueOnce(updatedQuizRound);
+
+      const result = await service.update(quizRoundId, updateQuizRoundDto);
+
+      expect(result).toBe(updatedQuizRound);
+      expect(quizRoundRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining(updateQuizRoundDto),
       );
     });
   });
