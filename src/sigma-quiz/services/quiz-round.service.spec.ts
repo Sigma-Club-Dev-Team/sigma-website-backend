@@ -124,4 +124,24 @@ describe('QuizRoundService', () => {
       );
     });
   });
+
+  describe('remove', () => {
+    it('should remove a QuizRound', async () => {
+      const quizRoundId = 'quiz-round-id';
+      const quizRoundMock = mockQuizRound({ id: quizRoundId });
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(quizRoundMock);
+      jest.spyOn(quizRoundRepo, 'delete').mockResolvedValueOnce(undefined);
+
+      await service.remove(quizRoundId);
+
+      expect(quizRoundRepo.delete).toHaveBeenCalledWith(quizRoundId);
+    });
+
+    it('should throw NotFoundException if course not found', async () => {
+      const schoolId = 'school-id';
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(undefined);
+
+      await expect(service.remove(schoolId)).rejects.toThrow(NotFoundException);
+    });
+  });
 });

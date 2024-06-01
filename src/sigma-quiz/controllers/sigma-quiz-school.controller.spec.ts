@@ -106,16 +106,16 @@ describe('SigmaQuizSchoolController', () => {
   });
 
   describe('remove', () => {
-    it('should remove a SigmaQuiz', async () => {
-      const quizId = 'quiz-id';
+    it('should remove a SigmaQuiz School', async () => {
+      const schoolId = 'quiz-school-id';
       jest
         .spyOn(sigmaQuizSchService, 'remove')
         .mockResolvedValueOnce(undefined);
 
-      const result = await controller.remove(quizId);
+      const result = await controller.remove(schoolId);
 
       expect(result).toEqual({ message: 'Successful' });
-      expect(sigmaQuizSchService.remove).toHaveBeenCalledWith(quizId);
+      expect(sigmaQuizSchService.remove).toHaveBeenCalledWith(schoolId);
     });
   });
 

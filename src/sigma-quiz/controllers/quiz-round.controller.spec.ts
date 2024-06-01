@@ -76,4 +76,16 @@ describe('QuizRoundController', () => {
       );
     });
   });
+
+  describe('remove', () => {
+    it('should remove a QuizRound', async () => {
+      const quizRoundId = 'quiz-round-id';
+      jest.spyOn(quizRoundService, 'remove').mockResolvedValueOnce(undefined);
+
+      const result = await controller.remove(quizRoundId);
+
+      expect(result).toEqual({ message: 'Successful' });
+      expect(quizRoundService.remove).toHaveBeenCalledWith(quizRoundId);
+    });
+  });
 });

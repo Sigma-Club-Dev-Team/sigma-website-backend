@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { Roles } from '../../auth/decorators/role.decorator';
 import { Role } from '../../constants/enums';
@@ -41,4 +42,14 @@ export class QuizRoundController {
   ) {
     return this.quizRoundService.update(id, updateQuizRoundDtoDto);
   }
-}
+
+  @Roles(Role.SuperAdmin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Delete(':id')
+  async remove(@Param('id', new ParseUUIDPipe()) id: string) {
+    await this.quizRoundService.remove(id);
+    return {
+      message: 'Successful',
+    };
+  }
+}               

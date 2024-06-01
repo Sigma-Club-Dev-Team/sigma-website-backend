@@ -66,4 +66,12 @@ export class QuizRoundService {
 
     return await this.findOneById(quizRound.id);
   }
+
+  async remove(id: string) {
+    const quizRound = await this.findOneById(id);
+    if (!quizRound) {
+      throw new NotFoundException('QuizRound does not exist!');
+    }
+    await this.quizRoundRepo.delete(id);
+  }
 }
