@@ -38,6 +38,11 @@ export class SigmaQuizController {
     return this.sigmaQuizService.findOneById(id);
   }
 
+  @Get(':id/rounds')
+  fetchQuizRounds(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.sigmaQuizService.fetchQuizRounds(id);
+  }
+
   @Roles(Role.SuperAdmin, Role.QuizMaster)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Put(':id')

@@ -1,6 +1,7 @@
 import { IsDateString, IsNotEmpty, IsOptional } from 'class-validator';
 import { CustomBaseEntity } from '../../database/base.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { QuizRound } from './quiz-round.entity';
 
 @Entity()
 export class SigmaQuiz extends CustomBaseEntity {
@@ -18,7 +19,7 @@ export class SigmaQuiz extends CustomBaseEntity {
   @IsNotEmpty()
   title: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   @IsOptional()
   @IsNotEmpty()
   description?: string;
@@ -26,4 +27,7 @@ export class SigmaQuiz extends CustomBaseEntity {
   @Column({ type: 'date', unique: true })
   @IsDateString()
   date: Date;
+
+  @OneToMany(() => QuizRound, (photo) => photo.quiz)
+  rounds: QuizRound[];
 }

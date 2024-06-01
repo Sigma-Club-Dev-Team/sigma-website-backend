@@ -74,8 +74,8 @@ export class SigmaQuizSchoolService {
   }
 
   async remove(id: string) {
-    const course = await this.findOneById(id);
-    if (!course) {
+    const school = await this.findOneById(id);
+    if (!school) {
       throw new NotFoundException('School does not exist!');
     }
     await this.sigmaQuizSchRepo.delete(id);
