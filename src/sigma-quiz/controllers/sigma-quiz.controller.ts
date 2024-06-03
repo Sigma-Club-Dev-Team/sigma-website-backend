@@ -16,6 +16,7 @@ import { Roles } from '../../auth/decorators/role.decorator';
 import { Role } from '../../constants/enums';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import RolesGuard from '../../auth/guards/role.guard';
+import { RegisterSchoolForQuizDto } from '../dto/register-school-gor-quiz-dto';
 
 @Controller('sigma-quiz')
 export class SigmaQuizController {
@@ -61,5 +62,18 @@ export class SigmaQuizController {
     return {
       message: 'Successful',
     };
+  }
+
+  @Roles(Role.SuperAdmin, Role.QuizMaster, Role.Adhoc)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post(':id/schools')
+  registerSchoolForQuiz(
+    @Param('id', new ParseUUIDPipe()) quizId: string,
+    @Body() registerSchForQuizDto: RegisterSchoolForQuizDto,
+  ) {
+    return this.sigmaQuizService.registerSchoolForQuiz(
+      quizId,
+      registerSchForQuizDto.school_id,
+    );
   }
 }

@@ -8,22 +8,28 @@ import {
   buildSigmaQuizMock,
   buildUpdateSigmaQuizDtoMock,
   mockQuizRound,
+  mockSchoolQuizRegistration,
+  mockSigmaQuizSchool,
 } from '../../test/factories/sigma-quiz.factory';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { QuizRoundService } from './quiz-round.service';
+import { SigmaQuizSchoolService } from './sigma-quiz-school.service';
+import { SchoolQuizRegistration } from '../entities/school-registration.entity';
 
 describe('SigmaQuizService', () => {
   let service: SigmaQuizService;
   let sigmaQuizRepo: Repository<SigmaQuiz>;
   let quizRoundService: QuizRoundService;
+  let quizSchoolService: SigmaQuizSchoolService;
+  let schoolRegistrationRepo: Repository<SchoolQuizRegistration>;
+
   const queryBuilderMock = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     setFindOptions: jest.fn().mockReturnThis(),
     addSelect: jest.fn().mockReturnThis(),
     setParameters: jest.fn().mockReturnThis(),
-    getOne: jest
-      .fn(),
+    getOne: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -32,6 +38,10 @@ describe('SigmaQuizService', () => {
     service = unit;
     sigmaQuizRepo = unitRef.get(getRepositoryToken(SigmaQuiz) as string);
     quizRoundService = unitRef.get(QuizRoundService);
+    quizSchoolService = unitRef.get(SigmaQuizSchoolService);
+    schoolRegistrationRepo = unitRef.get(
+      getRepositoryToken(SchoolQuizRegistration) as string,
+    );
   });
 
   afterEach(() => {
@@ -140,7 +150,7 @@ describe('SigmaQuizService', () => {
         .spyOn(sigmaQuizRepo, 'createQueryBuilder')
         .mockReturnValue(queryBuilderMock as any);
 
-        queryBuilderMock.getOne.mockResolvedValue(sigmaQuiz)
+      queryBuilderMock.getOne.mockResolvedValue(sigmaQuiz);
 
       jest.spyOn(sigmaQuizRepo, 'findOneBy').mockResolvedValue(sigmaQuiz);
       expect(await service.findOneById(quizId)).toBe(sigmaQuiz);
@@ -153,7 +163,7 @@ describe('SigmaQuizService', () => {
         .mockReturnValue(queryBuilderMock as any);
 
       queryBuilderMock.getOne.mockResolvedValue(undefined);
-      
+
       await expect(service.findOneById(userId)).rejects.toThrow(
         NotFoundException,
       );
@@ -248,6 +258,87 @@ describe('SigmaQuizService', () => {
       await expect(service.fetchQuizRounds(quizId)).rejects.toThrow(
         'Some error',
       );
+    });
+  });
+
+  describe('registerSchoolForQuiz', () => {
+    it('should register school for quiz successfully', async () => {
+      const quizId = 'quiz-id';
+      const schoolId = 'school-id';
+      const quiz = buildSigmaQuizMock({ id: quizId });
+      const school = mockSigmaQuizSchool({ id: schoolId });
+      const registerSchObj = {
+        quizId,
+        schoolId,
+        school,
+        quiz,
+      };
+      const schoolRegistration = mockSchoolQuizRegistration(registerSchObj);
+
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quiz);
+      jest.spyOn(quizSchoolService, 'findOneById').mockResolvedValue(school);
+      jest
+        .spyOn(schoolRegistrationRepo, 'save')
+        .mockResolvedValue(schoolRegistration);
+
+      const result = await service.registerSchoolForQuiz(quizId, schoolId);
+
+      expect(service.findOneById).toHaveBeenCalledWith(quizId);
+      expect(quizSchoolService.findOneById).toHaveBeenCalledWith(schoolId);
+      expect(schoolRegistrationRepo.save).toHaveBeenCalledWith(
+        registerSchObj
+      );
+      expect(result).toEqual(schoolRegistration);
+    });
+
+    it('should throw ConflictException when school is already registered for quiz', async () => {
+      const quizId = 'quiz-id';
+      const schoolId = 'school-id';
+      const quiz = buildSigmaQuizMock({ id: quizId });
+      const school = mockSigmaQuizSchool({ id: schoolId });
+
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quiz);
+      jest.spyOn(quizSchoolService, 'findOneById').mockResolvedValue(school);
+      jest
+        .spyOn(schoolRegistrationRepo, 'save')
+        .mockRejectedValue({ code: PostgresErrorCode.UniqueViolation });
+
+      await expect(
+        service.registerSchoolForQuiz(quizId, schoolId),
+      ).rejects.toThrow(ConflictException);
+      expect(service.findOneById).toHaveBeenCalledWith(quizId);
+      expect(quizSchoolService.findOneById).toHaveBeenCalledWith(schoolId);
+      expect(schoolRegistrationRepo.save).toHaveBeenCalledWith({
+        quizId,
+        schoolId,
+        school,
+        quiz,
+      });
+    });
+
+    it('should throw error for other issues during registration', async () => {
+      const quizId = 'quiz-id';
+      const schoolId = 'school-id';
+      const quiz = buildSigmaQuizMock({ id: quizId });
+      const school = mockSigmaQuizSchool({ id: schoolId });
+
+      const error = new Error('Some error');
+
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quiz);
+      jest.spyOn(quizSchoolService, 'findOneById').mockResolvedValue(school);
+      jest.spyOn(schoolRegistrationRepo, 'save').mockRejectedValue(error);
+
+      await expect(
+        service.registerSchoolForQuiz(quizId, schoolId),
+      ).rejects.toThrow(error);
+      expect(service.findOneById).toHaveBeenCalledWith(quizId);
+      expect(quizSchoolService.findOneById).toHaveBeenCalledWith(schoolId);
+      expect(schoolRegistrationRepo.save).toHaveBeenCalledWith({
+        quizId,
+        schoolId,
+        school,
+        quiz,
+      });
     });
   });
 });

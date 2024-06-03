@@ -6,6 +6,8 @@ import {
   buildSigmaQuizMock,
   buildUpdateSigmaQuizDtoMock,
   mockQuizRound,
+  mockRegisterSchForQuizDto,
+  mockSchoolQuizRegistration,
 } from '../../test/factories/sigma-quiz.factory';
 import { NotFoundException } from '@nestjs/common';
 
@@ -144,6 +146,31 @@ describe('SigmaQuizController', () => {
 
       await expect(controller.fetchQuizRounds(quizId)).rejects.toThrow(
         NotFoundException,
+      );
+    });
+  });
+
+  describe('registerSchoolForQuiz', () => {
+    it('should register school for quiz successfully', async () => {
+      const quizId = 'quiz-id';
+      const registerSchForQuizDto = mockRegisterSchForQuizDto({
+        school_id: 'school-id',
+      });
+      const expectedResult = mockSchoolQuizRegistration();
+
+      jest
+        .spyOn(sigmaQuizService, 'registerSchoolForQuiz')
+        .mockResolvedValue(expectedResult);
+
+      const result = await controller.registerSchoolForQuiz(
+        quizId,
+        registerSchForQuizDto,
+      );
+
+      expect(result).toEqual(expectedResult);
+      expect(sigmaQuizService.registerSchoolForQuiz).toHaveBeenCalledWith(
+        quizId,
+        registerSchForQuizDto.school_id,
       );
     });
   });

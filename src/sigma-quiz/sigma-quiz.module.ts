@@ -9,9 +9,17 @@ import { SigmaQuizSchoolController } from './controllers/sigma-quiz-school.contr
 import { QuizRound } from './entities/quiz-round.entity';
 import { QuizRoundController } from './controllers/quiz-round.controller';
 import { QuizRoundService } from './services/quiz-round.service';
+import { SchoolQuizRegistration } from './entities/school-registration.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([SigmaQuiz, SigmaQuizSchool, QuizRound])],
+  imports: [
+    TypeOrmModule.forFeature([
+      SigmaQuiz,
+      SigmaQuizSchool,
+      QuizRound,
+      SchoolQuizRegistration,
+    ]),
+  ],
   controllers: [
     SigmaQuizSchoolController,
     QuizRoundController,
