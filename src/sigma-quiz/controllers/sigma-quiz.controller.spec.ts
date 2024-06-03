@@ -130,7 +130,9 @@ describe('SigmaQuizController', () => {
         mockQuizRound({ id: '1' }),
         mockQuizRound({ id: '2' }),
       ];
-      jest.spyOn(sigmaQuizService, 'fetchQuizRounds').mockResolvedValue(quizRounds);
+      jest
+        .spyOn(sigmaQuizService, 'fetchQuizRounds')
+        .mockResolvedValue(quizRounds);
 
       const result = await controller.fetchQuizRounds(quizId);
 
@@ -172,6 +174,30 @@ describe('SigmaQuizController', () => {
         quizId,
         registerSchForQuizDto.school_id,
       );
+    });
+  });
+
+  describe('fetchScholsRegisteredForQuiz', () => {
+    it('should be defined', () => {
+      expect(controller).toBeDefined();
+    });
+
+    it('should fetch schools registered for a quiz', async () => {
+      const quizId = 'quizId1';
+      const schoolRegistrations = [
+        mockSchoolQuizRegistration(),
+        mockSchoolQuizRegistration(),
+      ];
+      jest
+        .spyOn(sigmaQuizService, 'fetchSchoolsRegisteredForQuiz')
+        .mockResolvedValue(schoolRegistrations);
+
+      const result = await controller.fetchSchoolsRegisteredForQuiz(quizId);
+
+      expect(
+        sigmaQuizService.fetchSchoolsRegisteredForQuiz,
+      ).toHaveBeenCalledWith(quizId);
+      expect(result).toEqual(schoolRegistrations);
     });
   });
 });

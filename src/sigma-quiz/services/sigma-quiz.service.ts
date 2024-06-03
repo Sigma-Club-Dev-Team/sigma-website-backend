@@ -118,4 +118,11 @@ export class SigmaQuizService {
       throw error;
     }
   }
+
+  async fetchSchoolsRegisteredForQuiz(quizId: string) {
+    const quiz = await this.findOneById(quizId);
+    const schoolRegistrations = await this.schoolRegistrationRepo.findBy({quiz: {id: quiz.id}});
+
+    return schoolRegistrations; 
+  }
 }

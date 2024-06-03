@@ -76,4 +76,11 @@ export class SigmaQuizController {
       registerSchForQuizDto.school_id,
     );
   }
+
+  @Get(':id/schools')
+  fetchSchoolsRegisteredForQuiz(
+    @Param('id', new ParseUUIDPipe()) quizId: string,
+  ) {
+    return this.sigmaQuizService.fetchSchoolsRegisteredForQuiz(quizId);
+  }
 }

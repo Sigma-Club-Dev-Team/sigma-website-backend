@@ -285,9 +285,7 @@ describe('SigmaQuizService', () => {
 
       expect(service.findOneById).toHaveBeenCalledWith(quizId);
       expect(quizSchoolService.findOneById).toHaveBeenCalledWith(schoolId);
-      expect(schoolRegistrationRepo.save).toHaveBeenCalledWith(
-        registerSchObj
-      );
+      expect(schoolRegistrationRepo.save).toHaveBeenCalledWith(registerSchObj);
       expect(result).toEqual(schoolRegistration);
     });
 
@@ -339,6 +337,39 @@ describe('SigmaQuizService', () => {
         school,
         quiz,
       });
+    });
+  });
+
+  describe('fetchSchoolsRegisteredForQuiz', () => {
+    it('should fetch schools registered for a quiz', async () => {
+      const quizId = 'quizId1';
+      const quiz = buildSigmaQuizMock({ id: quizId });
+      const schoolRegistrations = [
+        mockSchoolQuizRegistration({
+          quizId,
+          schoolId: 'school1',
+        }),
+        mockSchoolQuizRegistration({ quizId, schoolId: 'school2' }),
+      ];
+
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quiz);
+      jest.spyOn(schoolRegistrationRepo, 'findBy').mockResolvedValue(schoolRegistrations)
+
+      const result = await service.fetchSchoolsRegisteredForQuiz(quizId);
+
+      expect(schoolRegistrationRepo.findBy).toHaveBeenCalledWith({
+        quiz: { id: quiz.id },
+      });
+      expect(result).toEqual(schoolRegistrations);
+    });
+
+    it('should throw NotFoundException if quiz does not exist', async () => {
+      const quizId = 'invalidQuizId';
+      jest.spyOn(service, 'findOneById').mockRejectedValue(new NotFoundException());
+
+      await expect(
+        service.fetchSchoolsRegisteredForQuiz(quizId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

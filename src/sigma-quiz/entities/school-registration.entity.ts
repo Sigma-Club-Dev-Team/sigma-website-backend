@@ -27,6 +27,7 @@ export class SchoolQuizRegistration extends CustomBaseEntity {
   public quiz: SigmaQuiz;
 
   @ManyToOne(() => SigmaQuizSchool, {
+    eager: true,
     onDelete: 'CASCADE',
   })
   public school: SigmaQuizSchool;
