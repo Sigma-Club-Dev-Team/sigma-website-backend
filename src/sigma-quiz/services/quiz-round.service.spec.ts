@@ -236,4 +236,38 @@ describe('QuizRoundService', () => {
       expect(roundParticipationRepo.save).toHaveBeenCalledWith(roundParticipation);
     });
   });
+
+  describe('fetchParticipatingSchools', () => {
+    it('should fetch schools participating in quiz round', async () => {
+      const quizRoundId = 'quiz-round-id';
+      const quizRound = mockQuizRound({ id: quizRoundId });
+      const participatingSchools = [
+        mockSchoolRoundParticipation({
+          roundId: quizRoundId,
+        }),
+        mockSchoolRoundParticipation({
+          roundId: quizRoundId,
+        }),
+      ];
+
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quizRound);
+      jest
+        .spyOn(roundParticipationRepo, 'find')
+        .mockResolvedValue(participatingSchools);
+
+      const result = await service.fetchParticipatingSchools(quizRoundId);
+      expect(result).toEqual(participatingSchools);
+    });
+
+    it('should throw NotFoundException if quiz round does not exist', async () => {
+      const quizId = 'invalidQuizId';
+      jest
+        .spyOn(service, 'findOneById')
+        .mockRejectedValue(new NotFoundException());
+
+      await expect(
+        service.fetchParticipatingSchools(quizId),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 });

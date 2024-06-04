@@ -66,4 +66,9 @@ export class QuizRoundController {
       registerSchForRoundDto.school_id,
     );
   }
+
+  @Get(':id/schools')
+  fetchParticipatingSchools(@Param('id', new ParseUUIDPipe()) roundId: string) {
+    return this.quizRoundService.fetchParticipatingSchools(roundId);
+  }
 }               

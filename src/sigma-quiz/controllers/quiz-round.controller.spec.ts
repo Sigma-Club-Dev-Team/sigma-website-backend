@@ -109,10 +109,33 @@ describe('QuizRoundController', () => {
       );
 
       expect(result).toEqual(expectedResult);
-      expect(quizRoundService.addSchoolParticipationInRound).toHaveBeenCalledWith(
-        roundId,
-        registerSchForQuizDto.school_id,
+      expect(
+        quizRoundService.addSchoolParticipationInRound,
+      ).toHaveBeenCalledWith(roundId, registerSchForQuizDto.school_id);
+    });
+  });
+
+  describe('fetchScholsRegisteredForQuiz', () => {
+    it('should fetch schools participating in quiz round', async () => {
+      const quizRoundId = 'quiz-round-id';
+      const participatingSchools = [
+        mockSchoolRoundParticipation({
+          roundId: quizRoundId,
+        }),
+        mockSchoolRoundParticipation({
+          roundId: quizRoundId,
+        }),
+      ];
+      jest
+        .spyOn(quizRoundService, 'fetchParticipatingSchools')
+        .mockResolvedValue(participatingSchools);
+
+      const result = await controller.fetchParticipatingSchools(quizRoundId);
+
+      expect(quizRoundService.fetchParticipatingSchools).toHaveBeenCalledWith(
+        quizRoundId,
       );
+      expect(result).toEqual(participatingSchools);
     });
   });
 });

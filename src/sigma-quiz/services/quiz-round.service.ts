@@ -99,10 +99,24 @@ export class QuizRoundService {
       return await this.roundParticipationRepo.save(schoolRoundParticipation);
     } catch (error) {
       if (error?.code === PostgresErrorCode.UniqueViolation) {
-        throw new ConflictException('School already Participating In Quiz Round');
+        throw new ConflictException(
+          'School already Participating In Quiz Round',
+        );
       }
 
       throw error;
     }
+  }
+
+  async fetchParticipatingSchools(roundId: string) {
+    const round = await this.findOneById(roundId);
+    const participatingSchools = await this.roundParticipationRepo.find({
+      where: { round: { id: round.id } },
+      relations: {
+        schoolRegistration: true
+      }
+    });
+
+    return participatingSchools;
   }
 }
