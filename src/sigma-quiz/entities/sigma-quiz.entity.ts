@@ -2,6 +2,7 @@ import { IsDateString, IsNotEmpty, IsOptional } from 'class-validator';
 import { CustomBaseEntity } from '../../database/base.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { QuizRound } from './quiz-round.entity';
+import { SchoolQuizRegistration } from './school-registration.entity';
 
 @Entity()
 export class SigmaQuiz extends CustomBaseEntity {
@@ -30,4 +31,10 @@ export class SigmaQuiz extends CustomBaseEntity {
 
   @OneToMany(() => QuizRound, (photo) => photo.quiz)
   rounds: QuizRound[];
+
+  @OneToMany(
+    () => SchoolQuizRegistration,
+    (schoolRegistration) => schoolRegistration.quiz,
+  )
+  public studentsRegistrations: SchoolQuizRegistration[];
 }

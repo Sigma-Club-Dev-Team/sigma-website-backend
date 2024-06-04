@@ -14,14 +14,20 @@ import { getYear } from 'date-fns';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 import { QuizRoundService } from './quiz-round.service';
 import { QuizRound } from '../entities/quiz-round.entity';
+import { SchoolQuizRegistration } from '../entities/school-registration.entity';
+import { SigmaQuizSchoolService } from './sigma-quiz-school.service';
 
 @Injectable()
 export class SigmaQuizService {
   constructor(
-    @InjectRepository(SigmaQuiz)
-    private readonly sigmaQuizRepo: Repository<SigmaQuiz>,
     @Inject(forwardRef(() => QuizRoundService))
     private readonly quizRoundService: QuizRoundService,
+    @InjectRepository(SigmaQuiz)
+    private readonly sigmaQuizRepo: Repository<SigmaQuiz>,
+    @InjectRepository(SchoolQuizRegistration)
+    private readonly schoolRegistrationRepo: Repository<SchoolQuizRegistration>,
+    @Inject(forwardRef(() => SigmaQuizSchoolService))
+    private readonly quizSchoolService: SigmaQuizSchoolService,
   ) {}
 
   async create(createSigmaQuizDto: CreateSigmaQuizDto) {
@@ -88,7 +94,51 @@ export class SigmaQuizService {
 
   async fetchQuizRounds(quidId: string): Promise<QuizRound[]> {
     const quiz = await this.findOneById(quidId);
-    const quizRounds = await this.quizRoundService.findAll({quiz: {id: quiz.id}});
+    const quizRounds = await this.quizRoundService.findAll({
+      quiz: { id: quiz.id },
+    });
     return quizRounds;
+  }
+
+  async registerSchoolForQuiz(quizId: string, schoolId: string) {
+    try {
+      const quiz = await this.findOneById(quizId);
+      const school = await this.quizSchoolService.findOneById(schoolId);
+      const schoolRegistration = {
+        quizId,
+        schoolId,
+        school: school,
+        quiz: quiz,
+      };
+
+      return await this.schoolRegistrationRepo.save(schoolRegistration);
+    } catch (error) {
+      if (error?.code === PostgresErrorCode.UniqueViolation) {
+        throw new ConflictException('School already registered for Quiz');
+      }
+
+      throw error;
+    }
+  }
+
+  async fetchSchoolsRegisteredForQuiz(quizId: string) {
+    const quiz = await this.findOneById(quizId);
+    const schoolRegistrations = await this.schoolRegistrationRepo.findBy({
+      quiz: { id: quiz.id },
+    });
+
+    return schoolRegistrations;
+  }
+
+  async unregisterSchoolForQuiz(quizId: string, schoolId) {
+    const quiz = await this.findOneById(quizId);
+    const school = await this.quizSchoolService.findOneById(schoolId);
+    const schoolRegistration = await this.schoolRegistrationRepo.findOneBy({ quiz: { id: quiz.id }, school: {id: school.id} });
+    if (!schoolRegistration) {
+      throw new NotFoundException("School is not registered for Quiz");
+    }
+
+    await this.schoolRegistrationRepo.remove(schoolRegistration);
+    return this.fetchSchoolsRegisteredForQuiz(quiz.id);
   }
 }
