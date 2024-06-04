@@ -84,6 +84,8 @@ export class SigmaQuizController {
     return this.sigmaQuizService.fetchSchoolsRegisteredForQuiz(quizId);
   }
 
+  @Roles(Role.SuperAdmin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':quizId/schools/:schoolId')
   async unregisterSchoolFromQuiz(
     @Param('quizId', new ParseUUIDPipe()) quizId: string,
