@@ -2,23 +2,36 @@ import { TestBed } from '@automock/jest';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import {
+  buildSigmaQuizMock,
   mockCreateQuizRoundDto,
   mockQuizRound,
+  mockSchoolQuizRegistration,
+  mockSchoolRoundParticipation,
+  mockSigmaQuizSchool,
   mockUpdateQuizRoundDto,
 } from '../../test/factories/sigma-quiz.factory';
 import { QuizRoundService } from './quiz-round.service';
 import { QuizRound } from '../entities/quiz-round.entity';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { SigmaQuizService } from './sigma-quiz.service';
+import { SchoolRoundParticipation } from '../entities/school-round-participation.entity';
+import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 
 describe('QuizRoundService', () => {
   let service: QuizRoundService;
   let quizRoundRepo: Repository<QuizRound>;
+  let sigmaQuizService: SigmaQuizService;
+  let roundParticipationRepo: Repository<SchoolRoundParticipation>;
 
   beforeEach(async () => {
     const { unit, unitRef } = TestBed.create(QuizRoundService).compile();
 
     service = unit;
+    sigmaQuizService = unitRef.get(SigmaQuizService);
     quizRoundRepo = unitRef.get(getRepositoryToken(QuizRound) as string);
+    roundParticipationRepo = unitRef.get(
+      getRepositoryToken(SchoolRoundParticipation) as string,
+    );
   });
 
   afterEach(() => {
@@ -142,6 +155,85 @@ describe('QuizRoundService', () => {
       jest.spyOn(service, 'findOneById').mockResolvedValueOnce(undefined);
 
       await expect(service.remove(schoolId)).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('addSchoolParticipationInRound', () => {
+    const roundId = 'round-id-1';
+    const schoolId = 'school-id';
+    const quizId = 'quiz-id-1';
+    const quiz = buildSigmaQuizMock({ id: quizId });
+    const school = mockSigmaQuizSchool({ id: schoolId });
+    const quizRound = mockQuizRound({ id: roundId, quizId });
+    const schoolRegistration = mockSchoolQuizRegistration({
+      quizId,
+      schoolId,
+      school,
+      quiz,
+    });
+    const roundParticipation = {
+      roundId,
+      schoolRegistrationId: schoolRegistration.id,
+      schoolRegistration,
+      round: quizRound,
+    };
+    const schoolRoundParticipation = mockSchoolRoundParticipation(roundParticipation);
+
+    it('should add school participation in round', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quizRound);
+      jest
+        .spyOn(sigmaQuizService, 'fetchSchoolRegisterationForQuiz')
+        .mockResolvedValue(schoolRegistration);
+      jest.spyOn(roundParticipationRepo, 'save').mockResolvedValue(schoolRoundParticipation);
+      
+
+      const result = await service.addSchoolParticipationInRound(
+        roundId,
+        schoolId,
+      );
+      expect(result).toEqual(schoolRoundParticipation);
+      expect(service.findOneById).toHaveBeenCalledWith(roundId);
+      expect(
+        sigmaQuizService.fetchSchoolRegisterationForQuiz,
+      ).toHaveBeenCalledWith(quizId, schoolId);
+      expect(roundParticipationRepo.save).toHaveBeenCalledWith(roundParticipation);
+    });
+
+    it('should throw ConflictException if school is already participating in quiz round', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quizRound);
+      jest
+        .spyOn(sigmaQuizService, 'fetchSchoolRegisterationForQuiz')
+        .mockResolvedValue(schoolRegistration);
+      jest.spyOn(roundParticipationRepo, 'save').mockRejectedValue({
+        code: PostgresErrorCode.UniqueViolation,
+      });
+
+      await expect(
+        service.addSchoolParticipationInRound(roundId, schoolId),
+      ).rejects.toThrow(ConflictException);
+      expect(service.findOneById).toHaveBeenCalledWith(roundId);
+      expect(
+        sigmaQuizService.fetchSchoolRegisterationForQuiz,
+      ).toHaveBeenCalledWith(quizId, schoolId);
+      expect(roundParticipationRepo.save).toHaveBeenCalledWith(roundParticipation);
+    });
+
+    it('should throw error for other exceptions', async () => {
+            const otherError = new Error('Some other error');
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quizRound);
+      jest
+        .spyOn(sigmaQuizService, 'fetchSchoolRegisterationForQuiz')
+        .mockResolvedValue(schoolRegistration);
+      jest.spyOn(roundParticipationRepo, 'save').mockRejectedValue(otherError);
+
+      await expect(
+        service.addSchoolParticipationInRound(roundId, schoolId),
+      ).rejects.toThrow(otherError);
+      expect(service.findOneById).toHaveBeenCalledWith(roundId);
+      expect(
+        sigmaQuizService.fetchSchoolRegisterationForQuiz,
+      ).toHaveBeenCalledWith(quizId, schoolId);
+      expect(roundParticipationRepo.save).toHaveBeenCalledWith(roundParticipation);
     });
   });
 });

@@ -2,6 +2,8 @@ import { TestBed } from '@automock/jest';
 import {
   mockCreateQuizRoundDto,
   mockQuizRound,
+  mockRegisterSchForQuizDto,
+  mockSchoolRoundParticipation,
   mockUpdateQuizRoundDto,
 } from '../../test/factories/sigma-quiz.factory';
 import { QuizRoundController } from './quiz-round.controller';
@@ -86,6 +88,31 @@ describe('QuizRoundController', () => {
 
       expect(result).toEqual({ message: 'Successful' });
       expect(quizRoundService.remove).toHaveBeenCalledWith(quizRoundId);
+    });
+  });
+
+  describe('registerSchoolForRound', () => {
+    it('should add school participation for QuizRound successfully', async () => {
+      const roundId = 'quiz-round-id';
+      const registerSchForQuizDto = mockRegisterSchForQuizDto({
+        school_id: 'school-id',
+      });
+      const expectedResult = mockSchoolRoundParticipation();
+
+      jest
+        .spyOn(quizRoundService, 'addSchoolParticipationInRound')
+        .mockResolvedValue(expectedResult);
+
+      const result = await controller.registerSchoolForRound(
+        roundId,
+        registerSchForQuizDto,
+      );
+
+      expect(result).toEqual(expectedResult);
+      expect(quizRoundService.addSchoolParticipationInRound).toHaveBeenCalledWith(
+        roundId,
+        registerSchForQuizDto.school_id,
+      );
     });
   });
 });

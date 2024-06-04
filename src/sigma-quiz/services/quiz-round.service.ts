@@ -12,12 +12,15 @@ import { QuizRound } from '../entities/quiz-round.entity';
 import { CreateQuizRoundDto } from '../dto/create-quiz-round.dto';
 import { SigmaQuizService } from './sigma-quiz.service';
 import { UpdateQuizRoundDto } from '../dto/update-quiz-round.dto';
+import { SchoolRoundParticipation } from '../entities/school-round-participation.entity';
 
 @Injectable()
 export class QuizRoundService {
   constructor(
     @InjectRepository(QuizRound)
     private readonly quizRoundRepo: Repository<QuizRound>,
+    @InjectRepository(SchoolRoundParticipation)
+    private readonly roundParticipationRepo: Repository<SchoolRoundParticipation>,
     @Inject(forwardRef(() => SigmaQuizService))
     private readonly sigmaQuizService: SigmaQuizService,
   ) {}
@@ -76,5 +79,30 @@ export class QuizRoundService {
       throw new NotFoundException('QuizRound does not exist!');
     }
     await this.quizRoundRepo.delete(id);
+  }
+
+  async addSchoolParticipationInRound(roundId: string, schoolId: string) {
+    try {
+      const quizRound = await this.findOneById(roundId);
+      const schoolRegistration =
+        await this.sigmaQuizService.fetchSchoolRegisterationForQuiz(
+          quizRound.quizId,
+          schoolId,
+        );
+      const schoolRoundParticipation = {
+        roundId,
+        schoolRegistrationId: schoolRegistration.id,
+        schoolRegistration,
+        round: quizRound,
+      };
+
+      return await this.roundParticipationRepo.save(schoolRoundParticipation);
+    } catch (error) {
+      if (error?.code === PostgresErrorCode.UniqueViolation) {
+        throw new ConflictException('School already Participating In Quiz Round');
+      }
+
+      throw error;
+    }
   }
 }

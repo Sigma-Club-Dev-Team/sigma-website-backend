@@ -16,6 +16,7 @@ import RolesGuard from '../../auth/guards/role.guard';
 import { QuizRoundService } from '../services/quiz-round.service';
 import { CreateQuizRoundDto } from '../dto/create-quiz-round.dto';
 import { UpdateQuizRoundDto } from '../dto/update-quiz-round.dto';
+import { RegisterSchoolForQuizDto } from '../dto/register-school-gor-quiz-dto';
 
 @Controller('sigma-quiz/rounds')
 export class QuizRoundController {
@@ -51,5 +52,18 @@ export class QuizRoundController {
     return {
       message: 'Successful',
     };
+  }
+
+  @Roles(Role.SuperAdmin, Role.QuizMaster, Role.Adhoc)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post(':id/schools')
+  registerSchoolForRound(
+    @Param('id', new ParseUUIDPipe()) roundId: string,
+    @Body() registerSchForRoundDto: RegisterSchoolForQuizDto,
+  ) {
+    return this.quizRoundService.addSchoolParticipationInRound(
+      roundId,
+      registerSchForRoundDto.school_id,
+    );
   }
 }               

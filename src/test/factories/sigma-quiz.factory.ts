@@ -9,6 +9,7 @@ import { CreateQuizRoundDto } from '../../sigma-quiz/dto/create-quiz-round.dto';
 import { UpdateQuizRoundDto } from '../../sigma-quiz/dto/update-quiz-round.dto';
 import { SchoolQuizRegistration } from '../../sigma-quiz/entities/school-registration.entity';
 import { RegisterSchoolForQuizDto } from '../../sigma-quiz/dto/register-school-gor-quiz-dto';
+import { SchoolRoundParticipation } from '../../sigma-quiz/entities/school-round-participation.entity';
 
 export const buildSigmaQuizMock = (inputs?: Partial<SigmaQuiz>): SigmaQuiz => {
   return {
@@ -87,6 +88,7 @@ export const mockQuizRound = (partial?: Partial<QuizRound>): QuizRound => {
     marks_per_bonus_question: 2,
     created_at: new Date(),
     updated_at: new Date(),
+    schoolParticipations: [],
     ...partial,
     quiz: {
       ...buildSigmaQuizMock(partial?.quiz),
@@ -126,12 +128,32 @@ export function mockSchoolQuizRegistration(
     schoolId: 'mock-school-id',
     created_at: new Date(),
     updated_at: new Date(),
+    rounds: [],
     ...partial,
     school: {
       ...mockSigmaQuizSchool(partial?.school),
     },
     quiz: {
       ...buildSigmaQuizMock(partial?.quiz),
+    },
+  };
+}
+
+export function mockSchoolRoundParticipation(
+  partial?: Partial<SchoolRoundParticipation>,
+): SchoolRoundParticipation {
+  return {
+    id: 'mock-id',
+    roundId: 'mock-round-id',
+    schoolRegistrationId: 'mock-school-registration-id',
+    created_at: new Date(),
+    updated_at: new Date(),
+    ...partial,
+    schoolRegistration: {
+      ...mockSchoolQuizRegistration(partial?.schoolRegistration),
+    },
+    round: {
+      ...mockQuizRound(partial?.round),
     },
   };
 }

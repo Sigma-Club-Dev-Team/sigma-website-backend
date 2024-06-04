@@ -10,6 +10,7 @@ import { QuizRound } from './entities/quiz-round.entity';
 import { QuizRoundController } from './controllers/quiz-round.controller';
 import { QuizRoundService } from './services/quiz-round.service';
 import { SchoolQuizRegistration } from './entities/school-registration.entity';
+import { SchoolRoundParticipation } from './entities/school-round-participation.entity';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SchoolQuizRegistration } from './entities/school-registration.entity';
       SigmaQuizSchool,
       QuizRound,
       SchoolQuizRegistration,
+      SchoolRoundParticipation
     ]),
   ],
   controllers: [
