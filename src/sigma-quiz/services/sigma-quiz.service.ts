@@ -94,7 +94,9 @@ export class SigmaQuizService {
 
   async fetchQuizRounds(quidId: string): Promise<QuizRound[]> {
     const quiz = await this.findOneById(quidId);
-    const quizRounds = await this.quizRoundService.findAll({quiz: {id: quiz.id}});
+    const quizRounds = await this.quizRoundService.findAll({
+      quiz: { id: quiz.id },
+    });
     return quizRounds;
   }
 
@@ -121,8 +123,22 @@ export class SigmaQuizService {
 
   async fetchSchoolsRegisteredForQuiz(quizId: string) {
     const quiz = await this.findOneById(quizId);
-    const schoolRegistrations = await this.schoolRegistrationRepo.findBy({quiz: {id: quiz.id}});
+    const schoolRegistrations = await this.schoolRegistrationRepo.findBy({
+      quiz: { id: quiz.id },
+    });
 
-    return schoolRegistrations; 
+    return schoolRegistrations;
+  }
+
+  async unregisterSchoolForQuiz(quizId: string, schoolId) {
+    const quiz = await this.findOneById(quizId);
+    const school = await this.quizSchoolService.findOneById(schoolId);
+    const schoolRegistration = await this.schoolRegistrationRepo.findOneBy({ quiz: { id: quiz.id }, school: {id: school.id} });
+    if (!schoolRegistration) {
+      throw new NotFoundException("School is not registered for Quiz");
+    }
+
+    await this.schoolRegistrationRepo.remove(schoolRegistration);
+    return this.fetchSchoolsRegisteredForQuiz(quiz.id);
   }
 }

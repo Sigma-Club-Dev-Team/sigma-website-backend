@@ -83,4 +83,17 @@ export class SigmaQuizController {
   ) {
     return this.sigmaQuizService.fetchSchoolsRegisteredForQuiz(quizId);
   }
+
+  @Delete(':quizId/schools/:schoolId')
+  async unregisterSchoolFromQuiz(
+    @Param('quizId', new ParseUUIDPipe()) quizId: string,
+    @Param('schoolId', new ParseUUIDPipe()) schoolId: string,
+  ) {
+    const remainingRegisteredSchools =
+      await this.sigmaQuizService.unregisterSchoolForQuiz(quizId, schoolId);
+    return {
+      message: 'Successful',
+      registered_schools: remainingRegisteredSchools,
+    };
+  }
 }

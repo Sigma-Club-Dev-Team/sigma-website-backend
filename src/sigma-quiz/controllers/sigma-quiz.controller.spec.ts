@@ -200,4 +200,33 @@ describe('SigmaQuizController', () => {
       expect(result).toEqual(schoolRegistrations);
     });
   });
+
+  describe('unregisterSchoolFromQuiz', () => {
+    it('should unregister a school from a quiz and return a success message with remaining registered schools', async () => {
+      const quizId = 'quizId1';
+      const schoolId = 'schoolId1';
+      const remainingRegisteredSchools = [
+        mockSchoolQuizRegistration({ id: 'schoolId2' }),
+      ];
+
+      jest
+        .spyOn(sigmaQuizService, 'unregisterSchoolForQuiz')
+        .mockResolvedValue(remainingRegisteredSchools);
+
+      const result = await controller.unregisterSchoolFromQuiz(
+        quizId,
+        schoolId,
+      );
+
+      expect(sigmaQuizService.unregisterSchoolForQuiz).toHaveBeenCalledWith(
+        quizId,
+        schoolId,
+      );
+      expect(result).toEqual({
+        message: 'Successful',
+        registered_schools: remainingRegisteredSchools,
+      });
+    });
+
+  });
 });
