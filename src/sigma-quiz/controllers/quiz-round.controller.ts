@@ -71,4 +71,19 @@ export class QuizRoundController {
   fetchParticipatingSchools(@Param('id', new ParseUUIDPipe()) roundId: string) {
     return this.quizRoundService.fetchParticipatingSchools(roundId);
   }
+
+  @Roles(Role.SuperAdmin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Delete(':roundId/schools/:schoolId')
+  async removeSchoolFromRound(
+    @Param('roundId', new ParseUUIDPipe()) roundId: string,
+    @Param('schoolId', new ParseUUIDPipe()) schoolId: string,
+  ) {
+    const remainingSchools =
+      await this.quizRoundService.removeSchoolFromQuizRound(roundId, schoolId);
+    return {
+      message: 'Successful',
+      participating_schools: remainingSchools,
+    };
+  }
 }               

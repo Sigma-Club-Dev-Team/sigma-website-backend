@@ -270,4 +270,87 @@ describe('QuizRoundService', () => {
       ).rejects.toThrow(NotFoundException);
     });
   });
+
+  describe('removeSchoolFromQuizRound', () => {
+    it('should remove a school from a quizround participating schools and return the updated list of participating schools', async () => {
+      const roundId = 'round-id-1';
+      const schoolId = 'school-id';
+      const quizId = 'quiz-id-1';
+      const quiz = buildSigmaQuizMock({ id: quizId });
+      const school = mockSigmaQuizSchool({ id: schoolId });
+      const quizRound = mockQuizRound({ id: roundId, quizId });
+      const schoolRegistration = mockSchoolQuizRegistration({
+        quizId,
+        schoolId,
+        school,
+        quiz,
+      });
+      const roundParticipation = {
+        roundId,
+        schoolRegistrationId: schoolRegistration.id,
+        schoolRegistration,
+        round: quizRound,
+      };
+      const schoolRoundParticipation =
+        mockSchoolRoundParticipation(roundParticipation);
+
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quizRound);
+      jest
+        .spyOn(sigmaQuizService, 'fetchSchoolRegisterationForQuiz')
+        .mockResolvedValue(schoolRegistration);
+      jest
+        .spyOn(roundParticipationRepo, 'findOneBy')
+        .mockResolvedValue(schoolRoundParticipation);
+      jest.spyOn(roundParticipationRepo, 'remove').mockResolvedValue(undefined);
+      jest
+        .spyOn(service, 'fetchParticipatingSchools')
+        .mockResolvedValue([]);
+
+      const result = await service.removeSchoolFromQuizRound(roundId, schoolId);
+
+      expect(service.findOneById).toHaveBeenCalledWith(roundId);
+      expect(sigmaQuizService.fetchSchoolRegisterationForQuiz).toHaveBeenCalledWith(quizId, schoolId);
+      expect(roundParticipationRepo.findOneBy).toHaveBeenCalledWith({
+        round: { id: quizRound.id },
+        schoolRegistration: { id: schoolRegistration.id },
+      });
+      expect(roundParticipationRepo.remove).toHaveBeenCalledWith(
+        schoolRoundParticipation,
+      );
+      expect(result).toEqual([]);
+    });
+
+    it('should throw NotFoundException if the school is not registered for the quiz', async () => {
+      const roundId = 'round-id-1';
+      const schoolId = 'school-id';
+      const quizId = 'quiz-id-1';
+      const quiz = buildSigmaQuizMock({ id: quizId });
+      const school = mockSigmaQuizSchool({ id: schoolId });
+      const quizRound = mockQuizRound({ id: roundId, quizId });
+      const schoolRegistration = mockSchoolQuizRegistration({
+        quizId,
+        schoolId,
+        school,
+        quiz,
+      });
+
+      jest.spyOn(service, 'findOneById').mockResolvedValue(quizRound);
+      jest
+        .spyOn(sigmaQuizService, 'fetchSchoolRegisterationForQuiz')
+        .mockResolvedValue(schoolRegistration);
+      jest
+        .spyOn(roundParticipationRepo, 'findOneBy')
+        .mockResolvedValue(null);
+      
+      await expect(
+        service.removeSchoolFromQuizRound(quizId, schoolId),
+      ).rejects.toThrow(NotFoundException);
+      expect(service.findOneById).toHaveBeenCalledWith(quizId);
+      expect(sigmaQuizService.fetchSchoolRegisterationForQuiz).toHaveBeenCalledWith(quizId,schoolId);
+      expect(roundParticipationRepo.findOneBy).toHaveBeenCalledWith({
+        round: { id: quizRound.id },
+        schoolRegistration: { id: schoolRegistration.id },
+      });
+    });
+  });
 });

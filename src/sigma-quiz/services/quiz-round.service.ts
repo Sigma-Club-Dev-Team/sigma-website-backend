@@ -113,10 +113,29 @@ export class QuizRoundService {
     const participatingSchools = await this.roundParticipationRepo.find({
       where: { round: { id: round.id } },
       relations: {
-        schoolRegistration: true
-      }
+        schoolRegistration: true,
+      },
     });
 
     return participatingSchools;
+  }
+
+  async removeSchoolFromQuizRound(roundId: string, schoolId) {
+    const quizRound = await this.findOneById(roundId);
+    const schoolRegistration =
+      await this.sigmaQuizService.fetchSchoolRegisterationForQuiz(
+        quizRound.quizId,
+        schoolId,
+      );
+    const schoolParticipation = await this.roundParticipationRepo.findOneBy({
+      round: { id: quizRound.id },
+      schoolRegistration: { id: schoolRegistration.id },
+    });
+    if (!schoolParticipation) {
+      throw new NotFoundException('School is not part of this Quiz Round');
+    }
+
+    await this.roundParticipationRepo.remove(schoolParticipation);
+    return this.fetchParticipatingSchools(quizRound.id);
   }
 }

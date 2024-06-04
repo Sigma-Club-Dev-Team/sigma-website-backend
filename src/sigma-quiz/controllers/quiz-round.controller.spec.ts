@@ -138,4 +138,32 @@ describe('QuizRoundController', () => {
       expect(result).toEqual(participatingSchools);
     });
   });
+
+  describe('removeSchoolFromRound', () => {
+    it('should remove a school from a quizround participating schools and return a success message with remaining participating schools', async () => {
+      const quizRoundId = 'quiz-round-Id';
+      const schoolId = 'schoolId1';
+      const remainingParticipatingSchools = [
+        mockSchoolRoundParticipation({ id: schoolId }),
+      ];
+
+      jest
+        .spyOn(quizRoundService, 'removeSchoolFromQuizRound')
+        .mockResolvedValue(remainingParticipatingSchools);
+
+      const result = await controller.removeSchoolFromRound(
+        quizRoundId,
+        schoolId,
+      );
+
+      expect(quizRoundService.removeSchoolFromQuizRound).toHaveBeenCalledWith(
+        quizRoundId,
+        schoolId,
+      );
+      expect(result).toEqual({
+        message: 'Successful',
+        participating_schools: remainingParticipatingSchools,
+      });
+    });
+  });
 });
