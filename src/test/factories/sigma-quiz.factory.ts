@@ -20,7 +20,7 @@ export const buildSigmaQuizMock = (inputs?: Partial<SigmaQuiz>): SigmaQuiz => {
     created_at: new Date(),
     updated_at: new Date(),
     rounds: [],
-    studentsRegistrations: [],
+    schoolRegistrations: [],
     ...inputs,
   };
 };

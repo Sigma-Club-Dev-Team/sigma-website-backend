@@ -20,7 +20,7 @@ export class SchoolQuizRegistration extends CustomBaseEntity {
   @IsUUID()
   public schoolId: string;
 
-  @ManyToOne(() => SigmaQuiz, (quiz) => quiz.studentsRegistrations, {
+  @ManyToOne(() => SigmaQuiz, (quiz) => quiz.schoolRegistrations, {
     eager: true,
     onDelete: 'CASCADE',
   })

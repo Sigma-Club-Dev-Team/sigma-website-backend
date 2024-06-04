@@ -36,5 +36,5 @@ export class SigmaQuiz extends CustomBaseEntity {
     () => SchoolQuizRegistration,
     (schoolRegistration) => schoolRegistration.quiz,
   )
-  public studentsRegistrations: SchoolQuizRegistration[];
+  public schoolRegistrations: SchoolQuizRegistration[];
 }
