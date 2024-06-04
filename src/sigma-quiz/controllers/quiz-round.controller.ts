@@ -16,6 +16,7 @@ import RolesGuard from '../../auth/guards/role.guard';
 import { QuizRoundService } from '../services/quiz-round.service';
 import { CreateQuizRoundDto } from '../dto/create-quiz-round.dto';
 import { UpdateQuizRoundDto } from '../dto/update-quiz-round.dto';
+import { RegisterSchoolForQuizDto } from '../dto/register-school-gor-quiz-dto';
 
 @Controller('sigma-quiz/rounds')
 export class QuizRoundController {
@@ -50,6 +51,39 @@ export class QuizRoundController {
     await this.quizRoundService.remove(id);
     return {
       message: 'Successful',
+    };
+  }
+
+  @Roles(Role.SuperAdmin, Role.QuizMaster, Role.Adhoc)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post(':id/schools')
+  registerSchoolForRound(
+    @Param('id', new ParseUUIDPipe()) roundId: string,
+    @Body() registerSchForRoundDto: RegisterSchoolForQuizDto,
+  ) {
+    return this.quizRoundService.addSchoolParticipationInRound(
+      roundId,
+      registerSchForRoundDto.school_id,
+    );
+  }
+
+  @Get(':id/schools')
+  fetchParticipatingSchools(@Param('id', new ParseUUIDPipe()) roundId: string) {
+    return this.quizRoundService.fetchParticipatingSchools(roundId);
+  }
+
+  @Roles(Role.SuperAdmin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Delete(':roundId/schools/:schoolId')
+  async removeSchoolFromRound(
+    @Param('roundId', new ParseUUIDPipe()) roundId: string,
+    @Param('schoolId', new ParseUUIDPipe()) schoolId: string,
+  ) {
+    const remainingSchools =
+      await this.quizRoundService.removeSchoolFromQuizRound(roundId, schoolId);
+    return {
+      message: 'Successful',
+      participating_schools: remainingSchools,
     };
   }
 }               

@@ -1,8 +1,9 @@
 import { CustomBaseEntity } from '../../database/base.entity';
-import { Column, Entity, ManyToOne, Unique } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, Unique } from 'typeorm';
 import { SigmaQuiz } from './sigma-quiz.entity';
 import { SigmaQuizSchool } from './sigma-quiz-school.entity';
 import { IsUUID } from 'class-validator';
+import { SchoolRoundParticipation } from './school-round-participation.entity';
 
 @Entity()
 @Unique('unique-quiz-school', ['quizId', 'schoolId'])
@@ -20,7 +21,7 @@ export class SchoolQuizRegistration extends CustomBaseEntity {
   @IsUUID()
   public schoolId: string;
 
-  @ManyToOne(() => SigmaQuiz, (quiz) => quiz.studentsRegistrations, {
+  @ManyToOne(() => SigmaQuiz, (quiz) => quiz.schoolRegistrations, {
     eager: true,
     onDelete: 'CASCADE',
   })
@@ -31,4 +32,11 @@ export class SchoolQuizRegistration extends CustomBaseEntity {
     onDelete: 'CASCADE',
   })
   public school: SigmaQuizSchool;
+
+  @OneToMany(
+    () => SchoolRoundParticipation,
+    (schoolParticipation) => schoolParticipation.schoolRegistration,
+    { eager: true },
+  )
+  public rounds: SchoolRoundParticipation[];
 }

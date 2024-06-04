@@ -1,8 +1,9 @@
 import { IsDefined, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
 import { CustomBaseEntity } from '../../database/base.entity';
-import { Column, Entity, ManyToOne, Unique } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, Unique } from 'typeorm';
 import { SigmaQuiz } from './sigma-quiz.entity';
 import { IsValidNumberOfQuestions } from '../decorators/is-valid-number-of-school';
+import { SchoolRoundParticipation } from './school-round-participation.entity';
 
 @Entity()
 @Unique('unique-quiz-round', ['quizId', 'round_number'])
@@ -40,4 +41,11 @@ export class QuizRound extends CustomBaseEntity {
   @Column()
   @IsPositive()
   marks_per_bonus_question: number;
+
+  @OneToMany(
+    () => SchoolRoundParticipation,
+    (schoolParticipation) => schoolParticipation.round,
+    { eager: true },
+  )
+  public schoolParticipations: SchoolRoundParticipation[];
 }
