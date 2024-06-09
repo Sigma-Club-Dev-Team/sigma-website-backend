@@ -22,6 +22,8 @@ import { SigmaQuizModule } from './sigma-quiz/sigma-quiz.module';
         POSTGRES_DB: Joi.string(),
         DATABASE_URL: Joi.string().required(),
         PORT: Joi.number(),
+        JWT_SECRET: Joi.string().required(),
+        JWT_EXPIRATION_TIME: Joi.string(),
       }),
     }),
     DatabaseModule,
