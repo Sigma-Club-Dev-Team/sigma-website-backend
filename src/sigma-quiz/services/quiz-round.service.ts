@@ -72,7 +72,8 @@ export class QuizRoundService {
   }
 
   async update(id: string, updateQuizRoundDto: UpdateQuizRoundDto) {
-    const quizRound = await this.findOneById(id);
+    try {
+      let quizRound = await this.findOneById(id);
 
     const quizRoundUpdate = {
       ...quizRound,
@@ -82,6 +83,15 @@ export class QuizRoundService {
     await this.quizRoundRepo.save(quizRoundUpdate);
 
     return await this.findOneById(quizRound.id);
+    } catch (error) {
+      if (error?.code === PostgresErrorCode.UniqueViolation) {
+        throw new ConflictException(
+          'Quiz Round number already exists',
+        );
+      }
+
+      throw error;
+    }
   }
 
   async remove(id: string) {

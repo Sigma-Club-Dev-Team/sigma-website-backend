@@ -117,6 +117,8 @@ export function mockUpdateQuizRoundDto(
   partial: Partial<UpdateQuizRoundDto>,
 ): UpdateQuizRoundDto {
   return {
+    no_of_questions: 10,
+    no_of_schools: 5,
     ...partial,
   };
 }

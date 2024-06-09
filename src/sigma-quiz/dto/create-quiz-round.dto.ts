@@ -12,10 +12,10 @@ export class CreateQuizRoundDto {
   round_number: number;
 
   @IsPositive()
+  @IsValidNumberOfQuestions()
   no_of_questions: number;
 
   @IsPositive()
-  @IsValidNumberOfQuestions()
   no_of_schools: number;
 
   @IsPositive()

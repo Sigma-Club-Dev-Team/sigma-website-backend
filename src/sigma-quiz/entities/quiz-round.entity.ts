@@ -9,6 +9,11 @@ import { QuizQuestion } from './quiz-question.entity';
 @Entity()
 @Unique('unique-quiz-round', ['quizId', 'round_number'])
 export class QuizRound extends CustomBaseEntity {
+  constructor(partial: Partial<QuizRound>) {
+    super();
+    Object.assign(this, partial);
+  }
+
   @Column()
   @IsUUID()
   public quizId: string;
