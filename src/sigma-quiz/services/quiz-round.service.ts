@@ -6,13 +6,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 import { QuizRound } from '../entities/quiz-round.entity';
 import { CreateQuizRoundDto } from '../dto/create-quiz-round.dto';
 import { SigmaQuizService } from './sigma-quiz.service';
 import { UpdateQuizRoundDto } from '../dto/update-quiz-round.dto';
 import { SchoolRoundParticipation } from '../entities/school-round-participation.entity';
+import { QuizQuestionService } from './quiz-question.service';
 
 @Injectable()
 export class QuizRoundService {
@@ -23,6 +24,9 @@ export class QuizRoundService {
     private readonly roundParticipationRepo: Repository<SchoolRoundParticipation>,
     @Inject(forwardRef(() => SigmaQuizService))
     private readonly sigmaQuizService: SigmaQuizService,
+    @Inject(forwardRef(() => QuizQuestionService))
+    private readonly quizQuestionService: QuizQuestionService,
+    private dataSource: DataSource,
   ) {}
 
   async create(createQuizRoundDto: CreateQuizRoundDto) {
@@ -30,9 +34,16 @@ export class QuizRoundService {
       const quiz = await this.sigmaQuizService.findOneById(
         createQuizRoundDto.quizId,
       );
-      const quizRound = this.quizRoundRepo.create(createQuizRoundDto);
+
+      let quizRound = this.quizRoundRepo.create(createQuizRoundDto);
 
       quizRound.quiz = quiz;
+
+      await this.dataSource.transaction(async (transactionManager) => {
+        quizRound = await transactionManager.save<QuizRound>(quizRound);
+
+        await this.quizQuestionService.createRoundQuestions(quizRound, transactionManager);
+      });
 
       return await this.quizRoundRepo.save(quizRound);
     } catch (error) {

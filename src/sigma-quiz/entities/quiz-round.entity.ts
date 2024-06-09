@@ -4,6 +4,7 @@ import { Column, Entity, ManyToOne, OneToMany, Unique } from 'typeorm';
 import { SigmaQuiz } from './sigma-quiz.entity';
 import { IsValidNumberOfQuestions } from '../decorators/is-valid-number-of-school';
 import { SchoolRoundParticipation } from './school-round-participation.entity';
+import { QuizQuestion } from './quiz-question.entity';
 
 @Entity()
 @Unique('unique-quiz-round', ['quizId', 'round_number'])
@@ -48,4 +49,9 @@ export class QuizRound extends CustomBaseEntity {
     { eager: true },
   )
   public schoolParticipations: SchoolRoundParticipation[];
+
+  @OneToMany(() => QuizQuestion, (quiz_question) => quiz_question.round, {
+    eager: true,
+  })
+  public questions: QuizQuestion[];
 }

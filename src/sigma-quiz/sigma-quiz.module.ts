@@ -11,6 +11,8 @@ import { QuizRoundController } from './controllers/quiz-round.controller';
 import { QuizRoundService } from './services/quiz-round.service';
 import { SchoolQuizRegistration } from './entities/school-registration.entity';
 import { SchoolRoundParticipation } from './entities/school-round-participation.entity';
+import { QuizQuestion } from './entities/quiz-question.entity';
+import { QuizQuestionService } from './services/quiz-question.service';
 
 @Module({
   imports: [
@@ -19,7 +21,8 @@ import { SchoolRoundParticipation } from './entities/school-round-participation.
       SigmaQuizSchool,
       QuizRound,
       SchoolQuizRegistration,
-      SchoolRoundParticipation
+      SchoolRoundParticipation,
+      QuizQuestion
     ]),
   ],
   controllers: [
@@ -27,6 +30,6 @@ import { SchoolRoundParticipation } from './entities/school-round-participation.
     QuizRoundController,
     SigmaQuizController,
   ],
-  providers: [SigmaQuizService, SigmaQuizSchoolService, QuizRoundService],
+  providers: [SigmaQuizService, SigmaQuizSchoolService, QuizRoundService, QuizQuestionService],
 })
 export class SigmaQuizModule {}
