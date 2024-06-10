@@ -18,7 +18,6 @@ export class QuizRound extends CustomBaseEntity {
   @IsUUID()
   public quizId: string;
 
-  @IsDefined()
   @ManyToOne(() => SigmaQuiz, (user) => user.rounds)
   quiz: SigmaQuiz;
 

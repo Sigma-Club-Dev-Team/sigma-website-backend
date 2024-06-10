@@ -75,12 +75,16 @@ export class QuizRoundService {
     try {
       let quizRound = await this.findOneById(id);
 
-    const quizRoundUpdate = {
-      ...quizRound,
-      ...updateQuizRoundDto,
-    };
+    const quizRoundUpdate = Object.assign(quizRound, updateQuizRoundDto);
 
-    await this.quizRoundRepo.save(quizRoundUpdate);
+    await this.dataSource.transaction(async (transactionManager) => {
+      quizRound = await transactionManager.save<QuizRound>(quizRoundUpdate);
+
+      await this.quizQuestionService.updateRoundQuestions(
+        quizRound,
+        transactionManager,
+      );
+    });
 
     return await this.findOneById(quizRound.id);
     } catch (error) {
