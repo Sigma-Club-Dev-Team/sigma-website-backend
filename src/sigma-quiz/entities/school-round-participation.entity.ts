@@ -1,8 +1,9 @@
 import { CustomBaseEntity } from '../../database/base.entity';
-import { Column, Entity, ManyToOne, Unique } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, Unique } from 'typeorm';
 import { IsUUID } from 'class-validator';
 import { SchoolQuizRegistration } from './school-registration.entity';
 import { QuizRound } from './quiz-round.entity';
+import { QuizQuestion } from './quiz-question.entity';
 
 @Entity()
 @Unique('unique-round-participation', ['roundId', 'schoolRegistrationId'])
@@ -30,4 +31,10 @@ export class SchoolRoundParticipation extends CustomBaseEntity {
     onDelete: 'CASCADE',
   })
   public schoolRegistration: SchoolQuizRegistration;
+
+  @OneToMany(() => QuizQuestion, (quiz_question) => quiz_question.answered_by)
+  public answered_questions: QuizQuestion[];
+
+  @OneToMany(() => QuizQuestion, (quiz_question) => quiz_question.bonus_to)
+  public bonus_questions: QuizQuestion[];
 }

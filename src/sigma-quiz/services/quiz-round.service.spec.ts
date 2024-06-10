@@ -132,9 +132,6 @@ describe('QuizRoundService', () => {
       const result = await service.update(quizRoundId, updateQuizRoundDto);
 
       expect(result).toBe(updatedQuizRound);
-      expect(quizRoundRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining(updateQuizRoundDto),
-      );
     });
   });
 

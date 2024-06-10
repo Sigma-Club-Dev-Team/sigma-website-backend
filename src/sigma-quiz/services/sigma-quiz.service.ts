@@ -72,16 +72,26 @@ export class SigmaQuizService {
   }
 
   async update(id: string, updateSigmaQuizDto: UpdateSigmaQuizDto) {
-    const quiz = await this.findOneById(id);
+    try {
+      const quiz = await this.findOneById(id);
 
-    const sigmaQuizUpdate = {
-      ...quiz,
-      ...updateSigmaQuizDto,
-    };
+      const sigmaQuizUpdate = {
+        ...quiz,
+        ...updateSigmaQuizDto,
+      };
 
-    await this.sigmaQuizRepo.save(sigmaQuizUpdate);
+      await this.sigmaQuizRepo.save(sigmaQuizUpdate);
 
-    return await this.findOneById(quiz.id);
+      return await this.findOneById(quiz.id);
+    } catch (error) {
+      if (error?.code === PostgresErrorCode.UniqueViolation) {
+        throw new ConflictException(
+          error?.detail ?? 'Quiz with that date already exists',
+        );
+      }
+
+      throw error;
+    }
   }
 
   async remove(id: string) {
@@ -150,11 +160,11 @@ export class SigmaQuizService {
     const school = await this.quizSchoolService.findOneById(schoolId);
     const schoolRegistration = await this.schoolRegistrationRepo.findOneBy({
       quiz: { id: quiz.id },
-      school: {id: school.id}
+      school: { id: school.id },
     });
 
     if (!schoolRegistration) {
-      throw new NotFoundException("School Not Registered for Quiz");
+      throw new NotFoundException('School Not Registered for Quiz');
     }
 
     return schoolRegistration;
