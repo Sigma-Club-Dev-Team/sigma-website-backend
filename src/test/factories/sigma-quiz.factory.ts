@@ -8,7 +8,7 @@ import { QuizRound } from '../../sigma-quiz/entities/quiz-round.entity';
 import { CreateQuizRoundDto } from '../../sigma-quiz/dto/create-quiz-round.dto';
 import { UpdateQuizRoundDto } from '../../sigma-quiz/dto/update-quiz-round.dto';
 import { SchoolQuizRegistration } from '../../sigma-quiz/entities/school-registration.entity';
-import { RegisterSchoolForQuizDto } from '../../sigma-quiz/dto/register-school-gor-quiz-dto';
+import { RegisterSchoolForQuizDto } from '../../sigma-quiz/dto/register-school-for-quiz-dto';
 import { SchoolRoundParticipation } from '../../sigma-quiz/entities/school-round-participation.entity';
 import { QuizQuestion } from '../../sigma-quiz/entities/quiz-question.entity';
 import { MarkQuestionDto } from '../../sigma-quiz/dto/mark-question.dto';

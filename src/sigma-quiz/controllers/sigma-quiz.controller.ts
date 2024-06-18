@@ -16,7 +16,7 @@ import { Roles } from '../../auth/decorators/role.decorator';
 import { Role } from '../../constants/enums';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import RolesGuard from '../../auth/guards/role.guard';
-import { RegisterSchoolForQuizDto } from '../dto/register-school-gor-quiz-dto';
+import { RegisterSchoolForQuizDto } from '../dto/register-school-for-quiz-dto';
 
 @Controller('sigma-quiz')
 export class SigmaQuizController {
