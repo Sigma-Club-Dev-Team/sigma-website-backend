@@ -8,9 +8,11 @@ import { QuizRound } from '../../sigma-quiz/entities/quiz-round.entity';
 import { CreateQuizRoundDto } from '../../sigma-quiz/dto/create-quiz-round.dto';
 import { UpdateQuizRoundDto } from '../../sigma-quiz/dto/update-quiz-round.dto';
 import { SchoolQuizRegistration } from '../../sigma-quiz/entities/school-registration.entity';
-import { RegisterSchoolForQuizDto } from '../../sigma-quiz/dto/register-school-gor-quiz-dto';
+import { RegisterSchoolForQuizDto } from '../../sigma-quiz/dto/register-school-for-quiz-dto';
 import { SchoolRoundParticipation } from '../../sigma-quiz/entities/school-round-participation.entity';
 import { QuizQuestion } from '../../sigma-quiz/entities/quiz-question.entity';
+import { MarkQuestionDto } from '../../sigma-quiz/dto/mark-question.dto';
+import { AssignBonusQuestionDto } from 'src/sigma-quiz/dto/assign-bonus-question.dto';
 
 export const buildSigmaQuizMock = (inputs?: Partial<SigmaQuiz>): SigmaQuiz => {
   return {
@@ -173,7 +175,9 @@ export function mockRegisterSchForQuizDto(
   };
 }
 
-export const mockQuizQuestion = (partial?: Partial<QuizQuestion>): QuizQuestion => {
+export const mockQuizQuestion = (
+  partial?: Partial<QuizQuestion>,
+): QuizQuestion => {
   return {
     id: 'mock-id',
     roundId: 'mock-quiz-round-id',
@@ -186,3 +190,22 @@ export const mockQuizQuestion = (partial?: Partial<QuizQuestion>): QuizQuestion 
     },
   };
 };
+
+export function mockMarkQuestionDto(
+  partial?: Partial<MarkQuestionDto>,
+): MarkQuestionDto {
+  return {
+    school_id: 'mock-school-id',
+    answered_correctly: true,
+    ...partial,
+  };
+}
+
+export function mockAssignBonusQuestionDto(
+  partial?: Partial<AssignBonusQuestionDto>,
+): AssignBonusQuestionDto {
+  return {
+    school_id: 'mock-school-id',
+    ...partial,
+  };
+}

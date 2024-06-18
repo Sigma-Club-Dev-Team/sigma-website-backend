@@ -1,4 +1,4 @@
-import { IsDefined, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
 import { CustomBaseEntity } from '../../database/base.entity';
 import { Column, Entity, ManyToOne, Unique } from 'typeorm';
 import { SchoolRoundParticipation } from './school-round-participation.entity';
@@ -11,7 +11,6 @@ export class QuizQuestion extends CustomBaseEntity {
   @IsUUID()
   public roundId: string;
 
-  @IsDefined()
   @ManyToOne(() => QuizRound, (round) => round.questions, {
     onDelete: 'CASCADE',
   })
@@ -31,7 +30,7 @@ export class QuizQuestion extends CustomBaseEntity {
 
   @Column({ nullable: true })
   @IsNotEmpty()
-  correct_answer?: boolean;
+  answered_correctly?: boolean;
 
   @ManyToOne(() => SchoolRoundParticipation, {
     onDelete: 'CASCADE',

@@ -14,6 +14,7 @@ import { SigmaQuizService } from './sigma-quiz.service';
 import { UpdateQuizRoundDto } from '../dto/update-quiz-round.dto';
 import { SchoolRoundParticipation } from '../entities/school-round-participation.entity';
 import { QuizQuestionService } from './quiz-question.service';
+import { SigmaQuizSchoolService } from './sigma-quiz-school.service';
 
 @Injectable()
 export class QuizRoundService {
@@ -26,6 +27,8 @@ export class QuizRoundService {
     private readonly sigmaQuizService: SigmaQuizService,
     @Inject(forwardRef(() => QuizQuestionService))
     private readonly quizQuestionService: QuizQuestionService,
+    @Inject(forwardRef(() => SigmaQuizSchoolService))
+    private readonly quizSchoolService: SigmaQuizSchoolService,
     private dataSource: DataSource,
   ) {}
 
@@ -42,7 +45,10 @@ export class QuizRoundService {
       await this.dataSource.transaction(async (transactionManager) => {
         quizRound = await transactionManager.save<QuizRound>(quizRound);
 
-        await this.quizQuestionService.createRoundQuestions(quizRound, transactionManager);
+        await this.quizQuestionService.createRoundQuestions(
+          quizRound,
+          transactionManager,
+        );
       });
 
       return await this.quizRoundRepo.save(quizRound);
@@ -75,23 +81,21 @@ export class QuizRoundService {
     try {
       let quizRound = await this.findOneById(id);
 
-    const quizRoundUpdate = Object.assign(quizRound, updateQuizRoundDto);
+      const quizRoundUpdate = Object.assign(quizRound, updateQuizRoundDto);
 
-    await this.dataSource.transaction(async (transactionManager) => {
-      quizRound = await transactionManager.save<QuizRound>(quizRoundUpdate);
+      await this.dataSource.transaction(async (transactionManager) => {
+        quizRound = await transactionManager.save<QuizRound>(quizRoundUpdate);
 
-      await this.quizQuestionService.updateRoundQuestions(
-        quizRound,
-        transactionManager,
-      );
-    });
+        await this.quizQuestionService.updateRoundQuestions(
+          quizRound,
+          transactionManager,
+        );
+      });
 
-    return await this.findOneById(quizRound.id);
+      return await this.findOneById(quizRound.id);
     } catch (error) {
       if (error?.code === PostgresErrorCode.UniqueViolation) {
-        throw new ConflictException(
-          'Quiz Round number already exists',
-        );
+        throw new ConflictException('Quiz Round number already exists');
       }
 
       throw error;
@@ -162,5 +166,23 @@ export class QuizRoundService {
 
     await this.roundParticipationRepo.remove(schoolParticipation);
     return this.fetchParticipatingSchools(quizRound.id);
+  }
+
+  async fetchSchoolParticipationForQuizRound(
+    roundId: string,
+    schoolId: string,
+  ) {
+    const round = await this.findOneById(roundId);
+    const school = await this.quizSchoolService.findOneById(schoolId);
+    const roundParticipation = await this.roundParticipationRepo.findOneBy({
+      round: { id: round.id },
+      schoolRegistration: { school: { id: school.id } },
+    });
+
+    if (!roundParticipation) {
+      throw new NotFoundException('School Not Participating in Quiz Round');
+    }
+
+    return roundParticipation;
   }
 }

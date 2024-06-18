@@ -16,7 +16,7 @@ import RolesGuard from '../../auth/guards/role.guard';
 import { QuizRoundService } from '../services/quiz-round.service';
 import { CreateQuizRoundDto } from '../dto/create-quiz-round.dto';
 import { UpdateQuizRoundDto } from '../dto/update-quiz-round.dto';
-import { RegisterSchoolForQuizDto } from '../dto/register-school-gor-quiz-dto';
+import { RegisterSchoolForQuizDto } from '../dto/register-school-for-quiz-dto';
 
 @Controller('sigma-quiz/rounds')
 export class QuizRoundController {
@@ -86,4 +86,4 @@ export class QuizRoundController {
       participating_schools: remainingSchools,
     };
   }
-}               
+}

@@ -13,6 +13,7 @@ import { SchoolQuizRegistration } from './entities/school-registration.entity';
 import { SchoolRoundParticipation } from './entities/school-round-participation.entity';
 import { QuizQuestion } from './entities/quiz-question.entity';
 import { QuizQuestionService } from './services/quiz-question.service';
+import { QuizQuestionController } from './controllers/quiz-question.controller';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { QuizQuestionService } from './services/quiz-question.service';
   controllers: [
     SigmaQuizSchoolController,
     QuizRoundController,
+    QuizQuestionController,
     SigmaQuizController,
   ],
   providers: [SigmaQuizService, SigmaQuizSchoolService, QuizRoundService, QuizQuestionService],
