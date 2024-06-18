@@ -12,6 +12,7 @@ import { RegisterSchoolForQuizDto } from '../../sigma-quiz/dto/register-school-f
 import { SchoolRoundParticipation } from '../../sigma-quiz/entities/school-round-participation.entity';
 import { QuizQuestion } from '../../sigma-quiz/entities/quiz-question.entity';
 import { MarkQuestionDto } from '../../sigma-quiz/dto/mark-question.dto';
+import { AssignBonusQuestionDto } from 'src/sigma-quiz/dto/assign-bonus-question.dto';
 
 export const buildSigmaQuizMock = (inputs?: Partial<SigmaQuiz>): SigmaQuiz => {
   return {
@@ -174,7 +175,9 @@ export function mockRegisterSchForQuizDto(
   };
 }
 
-export const mockQuizQuestion = (partial?: Partial<QuizQuestion>): QuizQuestion => {
+export const mockQuizQuestion = (
+  partial?: Partial<QuizQuestion>,
+): QuizQuestion => {
   return {
     id: 'mock-id',
     roundId: 'mock-quiz-round-id',
@@ -194,6 +197,15 @@ export function mockMarkQuestionDto(
   return {
     school_id: 'mock-school-id',
     answered_correctly: true,
+    ...partial,
+  };
+}
+
+export function mockAssignBonusQuestionDto(
+  partial?: Partial<AssignBonusQuestionDto>,
+): AssignBonusQuestionDto {
+  return {
+    school_id: 'mock-school-id',
     ...partial,
   };
 }

@@ -31,9 +31,11 @@ export class QuizQuestionService {
   async findOneById(id: string): Promise<QuizQuestion> {
     const quizQuestion = await this.quizQuestionRepo.findOne({
       where: { id },
-      relations: {answered_by: {
-        schoolRegistration: true
-      }}
+      relations: {
+        answered_by: {
+          schoolRegistration: true,
+        },
+      },
     });
     if (!quizQuestion) {
       throw new NotFoundException('Quiz Question with this id does not exist');
@@ -127,6 +129,60 @@ export class QuizQuestionService {
 
     question.answered_by = roundParticipation;
     question.answered_correctly = answered_correctly;
+    await this.quizQuestionRepo.save(question);
+    return await this.findOneById(questionId);
+  }
+
+  async assignBonusQuestion(questionId: string, schoolId: string) {
+    const question = await this.findOneById(questionId);
+
+    const roundParticipation =
+      await this.quizRoundService.fetchSchoolParticipationForQuizRound(
+        question.roundId,
+        schoolId,
+      );
+
+    /** Check if Question already marked as answered */
+    if (!question.answered_by) {
+      throw new ConflictException(
+        `Can't assign bonus question except marked as answered incorrectly by another school`,
+      );
+    }
+
+    /** Check if Question already marked as answered */
+    if (question.answered_by) {
+      // cant assign bonus question to the same school that selected it
+      if (question.answered_by.id === roundParticipation.id) {
+        throw new ConflictException(
+          `Can not assign bonus question. Question already marked as Answered by This School`,
+        );
+      }
+
+      // can't assign bonus question if answered correctly by another school
+      if (
+        question.answered_by.id !== roundParticipation.id &&
+        question.answered_correctly === true
+      ) {
+        throw new ConflictException(
+          `Can not assign bonus question. Question already marked as Answered correctly by ${
+            question.answered_by?.schoolRegistration?.school?.name ??
+            'Another School'
+          }`,
+        );
+      }
+    }
+
+    /** Check if Question already assigned as bonus as bonus to another */
+    if (question.bonus_to && question.bonus_to.id !== roundParticipation.id) {
+      throw new ConflictException(
+        `Bonus Question already assigned to ${
+          question.answered_by?.schoolRegistration?.school?.name ??
+          'Another School'
+        }`,
+      );
+    }
+
+    question.bonus_to = roundParticipation;
     await this.quizQuestionRepo.save(question);
     return await this.findOneById(questionId);
   }

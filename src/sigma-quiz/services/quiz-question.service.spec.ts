@@ -278,9 +278,7 @@ describe('QuizQuestionService', () => {
         answered_correctly: answered_correctly,
       };
 
-      jest
-        .spyOn(service, 'findOneById')
-        .mockResolvedValueOnce(question);
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(question);
       jest
         .spyOn(quizRoundService, 'fetchSchoolParticipationForQuizRound')
         .mockResolvedValueOnce(roundParticipation);
@@ -313,7 +311,6 @@ describe('QuizQuestionService', () => {
         .spyOn(service, 'findOneById')
         .mockResolvedValueOnce(answeredQuestion);
 
-
       await expect(
         service.markQuestion(questionId, schoolId, answered_correctly),
       ).rejects.toThrow(ConflictException);
@@ -333,6 +330,173 @@ describe('QuizQuestionService', () => {
 
       await expect(
         service.markQuestion(questionId, schoolId, answered_correctly),
+      ).rejects.toThrow(errorMessage);
+
+      expect(service.findOneById).toHaveBeenCalledTimes(1);
+      expect(
+        quizRoundService.fetchSchoolParticipationForQuizRound,
+      ).not.toHaveBeenCalled();
+      expect(quizQuestionRepo.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('assignBonusQuestion', () => {
+    const questionId = 'question-id-1';
+    const schoolId = 'school-id-1';
+    const roundId = 'round-id-1';
+    const unansweredQuestion = mockQuizQuestion({
+      id: questionId,
+      roundId,
+      answered_by: null,
+      answered_correctly: null,
+      bonus_to: null,
+    });
+    const roundParticipation = mockSchoolRoundParticipation({
+      id: 'participation-id-1',
+      schoolRegistration: mockSchoolQuizRegistration({
+        school: mockSigmaQuizSchool({ id: schoolId, name: 'School A' }),
+      }),
+    });
+
+    it('should successfully assign a bonus question', async () => {
+      const anotherSchoolParticipation = mockSchoolRoundParticipation({
+        id: 'another-participation-id',
+      });
+
+      const answeredQuestion = {
+        ...unansweredQuestion,
+        answered_by: anotherSchoolParticipation,
+        answered_correctly: false,
+      };
+
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(answeredQuestion);
+      jest
+        .spyOn(quizRoundService, 'fetchSchoolParticipationForQuizRound')
+        .mockResolvedValueOnce(roundParticipation);
+      jest
+        .spyOn(quizQuestionRepo, 'save')
+        .mockResolvedValueOnce(answeredQuestion);
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce({
+        ...answeredQuestion,
+        bonus_to: roundParticipation,
+      });
+
+      const result = await service.assignBonusQuestion(questionId, schoolId);
+
+      expect(result.bonus_to).toEqual(roundParticipation);
+      expect(service.findOneById).toHaveBeenCalledTimes(2);
+      expect(quizQuestionRepo.save).toHaveBeenCalledWith({
+        ...answeredQuestion,
+        bonus_to: roundParticipation,
+      });
+    });
+
+    it('should throw ConflictException if question is not answered', async () => {
+      jest
+        .spyOn(service, 'findOneById')
+        .mockResolvedValueOnce(unansweredQuestion);
+
+      await expect(
+        service.assignBonusQuestion(questionId, schoolId),
+      ).rejects.toThrow(ConflictException);
+
+      expect(service.findOneById).toHaveBeenCalledTimes(1);
+      expect(
+        quizRoundService.fetchSchoolParticipationForQuizRound,
+      ).toHaveBeenCalled();
+      expect(quizQuestionRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw ConflictException if question is answered by the same school', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce({
+        ...unansweredQuestion,
+        answered_by: roundParticipation,
+      });
+      jest
+        .spyOn(quizRoundService, 'fetchSchoolParticipationForQuizRound')
+        .mockResolvedValueOnce(roundParticipation);
+
+      await expect(
+        service.assignBonusQuestion(questionId, schoolId),
+      ).rejects.toThrow(
+        new ConflictException(
+          `Can not assign bonus question. Question already marked as Answered by This School`,
+        ),
+      );
+
+      expect(service.findOneById).toHaveBeenCalledTimes(1);
+      expect(
+        quizRoundService.fetchSchoolParticipationForQuizRound,
+      ).toHaveBeenCalledTimes(1);
+      expect(quizQuestionRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw ConflictException if question is answered correctly by another school', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce({
+        ...unansweredQuestion,
+        answered_by: mockSchoolRoundParticipation({
+          id: 'another-participation-id',
+          schoolRegistration: mockSchoolQuizRegistration({
+        school: mockSigmaQuizSchool({  name: 'Another School' }),
+      }),
+        }),
+        answered_correctly: true,
+      });
+      jest
+        .spyOn(quizRoundService, 'fetchSchoolParticipationForQuizRound')
+        .mockResolvedValueOnce(roundParticipation);
+
+      await expect(
+        service.assignBonusQuestion(questionId, schoolId),
+      ).rejects.toThrow(ConflictException);
+
+      expect(service.findOneById).toHaveBeenCalledTimes(1);
+      expect(
+        quizRoundService.fetchSchoolParticipationForQuizRound,
+      ).toHaveBeenCalledTimes(1);
+      expect(quizQuestionRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('should throw ConflictException if bonus question is already assigned to another school', async () => {
+      const anotherSchoolParticipation = mockSchoolRoundParticipation({
+        id: 'another-participation-id',
+      });
+      const bonusTo = mockSchoolRoundParticipation({
+        id: 'another-participation-id',
+        schoolRegistration: mockSchoolQuizRegistration({
+          school: mockSigmaQuizSchool({ name: 'Another School' }),
+        }),
+      });
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce({
+        ...unansweredQuestion,
+        answered_by: anotherSchoolParticipation,
+        answered_correctly: false,
+        bonus_to: bonusTo,
+      });
+      jest
+        .spyOn(quizRoundService, 'fetchSchoolParticipationForQuizRound')
+        .mockResolvedValueOnce(roundParticipation);
+
+      await expect(
+        service.assignBonusQuestion(questionId, schoolId),
+      ).rejects.toThrow(ConflictException
+      );
+
+      expect(service.findOneById).toHaveBeenCalledTimes(1);
+      expect(
+        quizRoundService.fetchSchoolParticipationForQuizRound,
+      ).toHaveBeenCalledTimes(1);
+      expect(quizQuestionRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('should handle errors', async () => {
+      const errorMessage = 'An error occurred';
+      jest
+        .spyOn(service, 'findOneById')
+        .mockRejectedValueOnce(new Error(errorMessage));
+
+      await expect(
+        service.assignBonusQuestion(questionId, schoolId),
       ).rejects.toThrow(errorMessage);
 
       expect(service.findOneById).toHaveBeenCalledTimes(1);
