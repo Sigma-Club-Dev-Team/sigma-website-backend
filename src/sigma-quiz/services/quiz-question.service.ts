@@ -99,7 +99,11 @@ export class QuizQuestionService {
     }
   }
 
-  async markQuestion(questionId: string, schoolId: string, answered_correctly: boolean) {
+  async markQuestion(
+    questionId: string,
+    schoolId: string,
+    answered_correctly: boolean,
+  ) {
     const question = await this.findOneById(questionId);
 
     const roundParticipation =
@@ -108,12 +112,15 @@ export class QuizQuestionService {
         schoolId,
       );
 
-    if (question.answered_by) {
+    /** Check if Question already marked as answered by another school*/
+    if (
+      question.answered_by &&
+      question.answered_by.id !== roundParticipation.id
+    ) {
       throw new ConflictException(
         `Question already marked as Answered by ${
-          question.answered_by.id === roundParticipation.id
-            ? 'This School'
-            : question.answered_by?.schoolRegistration?.school?.name ?? "Another School"
+          question.answered_by?.schoolRegistration?.school?.name ??
+          'Another School'
         }`,
       );
     }

@@ -299,10 +299,11 @@ describe('QuizQuestionService', () => {
       expect(quizQuestionRepo.save).toHaveBeenCalledWith(markedQuestion);
     });
 
-    it('should throw ConflictException if question is already answered', async () => {
+    it('should throw ConflictException if question is already answered by another schol', async () => {
+      const anotherSchoolRoundParticipation = mockSchoolRoundParticipation();
       const answeredQuestion = {
         ...question,
-        answered_by: roundParticipation,
+        answered_by: anotherSchoolRoundParticipation,
       };
 
       jest
