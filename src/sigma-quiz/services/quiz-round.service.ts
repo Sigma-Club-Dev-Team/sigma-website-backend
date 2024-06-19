@@ -85,6 +85,12 @@ export class QuizRoundService {
     try {
       let quizRound = await this.findOneById(id);
 
+      if (updateQuizRoundDto.no_of_schools < quizRound.schoolParticipations.length) {
+        throw new ConflictException(
+          'Update will make partipating schools more than allowed number for round. Please remove schools from round first or increase no of schools',
+        );
+      }
+
       const quizRoundUpdate = Object.assign(quizRound, updateQuizRoundDto);
 
       await this.dataSource.transaction(async (transactionManager) => {
