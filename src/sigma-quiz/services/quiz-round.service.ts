@@ -70,7 +70,11 @@ export class QuizRoundService {
   }
 
   async findOneById(id: string): Promise<QuizRound> {
-    const quizRound = await this.quizRoundRepo.findOneBy({ id });
+    const quizRound = await this.quizRoundRepo.findOne({ where: { id }, relations: {
+      schoolParticipations: {
+        schoolRegistration: true
+      }
+    }});
     if (!quizRound) {
       throw new NotFoundException('Quiz Round with this id does not exist');
     }
@@ -113,6 +117,9 @@ export class QuizRoundService {
   async addSchoolParticipationInRound(roundId: string, schoolId: string) {
     try {
       const quizRound = await this.findOneById(roundId);
+      if (quizRound.schoolParticipations.length >= quizRound.no_of_schools) {
+        throw new ConflictException(`Round allows a maximum of ${quizRound.no_of_schools} Schools`)
+      }
       const schoolRegistration =
         await this.sigmaQuizService.fetchSchoolRegisterationForQuiz(
           quizRound.quizId,

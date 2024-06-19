@@ -102,13 +102,13 @@ describe('QuizRoundService', () => {
     it('should return the QuizRound with the provided id', async () => {
       const quizRoundId = '1';
       const quizRound = mockQuizRound({id: quizRoundId});
-      jest.spyOn(quizRoundRepo, 'findOneBy').mockResolvedValue(quizRound);
+      jest.spyOn(quizRoundRepo, 'findOne').mockResolvedValue(quizRound);
       expect(await service.findOneById(quizRoundId)).toBe(quizRound);
     });
 
     it('should throw NotFound Exception if QuizRound with provided id does not exist', async () => {
       const quizRoundId = 'nonexistent-id';
-      jest.spyOn(quizRoundRepo, 'findOneBy').mockResolvedValue(undefined);
+      jest.spyOn(quizRoundRepo, 'findOne').mockResolvedValue(undefined);
       await expect(service.findOneById(quizRoundId)).rejects.toThrow(
         NotFoundException,
       );
