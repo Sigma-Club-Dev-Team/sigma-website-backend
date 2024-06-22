@@ -130,7 +130,7 @@ export class QuizQuestionService {
     question.answered_by = roundParticipation;
     question.answered_correctly = answered_correctly;
     await this.quizQuestionRepo.save(question);
-    return await this.findOneById(questionId);
+    return await this.quizRoundService.computeRoundScores(question.roundId);
   }
 
   async assignBonusQuestion(questionId: string, schoolId: string) {

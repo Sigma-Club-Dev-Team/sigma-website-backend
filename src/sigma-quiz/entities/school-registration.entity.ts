@@ -39,4 +39,10 @@ export class SchoolQuizRegistration extends CustomBaseEntity {
     { eager: true },
   )
   public rounds: SchoolRoundParticipation[];
+
+  @Column({ default: 0 })
+  public score: number;
+
+  @Column({ default: 0 })
+  public position: number;
 }

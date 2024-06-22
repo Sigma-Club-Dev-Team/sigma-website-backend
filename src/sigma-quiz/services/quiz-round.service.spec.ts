@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import {
   buildSigmaQuizMock,
   mockCreateQuizRoundDto,
+  mockQuizQuestion,
   mockQuizRound,
   mockSchoolQuizRegistration,
   mockSchoolRoundParticipation,
@@ -423,6 +424,87 @@ describe('QuizRoundService', () => {
       expect(roundParticipationRepo.findOneBy).toHaveBeenCalledWith({
         round: { id: roundId },
         schoolRegistration: { school: { id: schoolId } },
+      });
+    });
+  });
+
+  describe('computeRoundScores', () => {
+    const roundId = 'round-id-1';
+    const quizRound = mockQuizRound({
+      id: roundId,
+      marks_per_question: 10,
+      marks_per_bonus_question: 5,
+      schoolParticipations: [
+        mockSchoolRoundParticipation({
+          answered_questions: [
+            mockQuizQuestion({ answered_correctly: true }),
+            mockQuizQuestion({ answered_correctly: false }),
+            mockQuizQuestion({ answered_correctly: true }),
+          ],
+          bonus_questions: [mockQuizQuestion()],
+          score: 0,
+          position: 0,
+        }),
+        mockSchoolRoundParticipation({
+          answered_questions: [
+            mockQuizQuestion({ answered_correctly: false }),
+            mockQuizQuestion({ answered_correctly: false }),
+          ],
+          bonus_questions: [
+            mockQuizQuestion({ answered_correctly: false }),
+            mockQuizQuestion({ answered_correctly: false }),
+          ],
+          score: 0,
+          position: 0,
+        }),
+      ],
+    });
+
+    it('should compute round scores correctly and update positions', async () => {
+      const quiz = buildSigmaQuizMock(
+        
+      )
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(quizRound);
+      jest
+        .spyOn(sigmaQuizService, 'computeQuizScores')
+        .mockResolvedValueOnce(quiz);
+
+      sigmaQuizService.computeQuizScores
+
+      const result = await service.computeRoundScores(roundId);
+
+      expect(service.findOneById).toHaveBeenCalledWith(roundId, {
+        schoolParticipations: {
+          answered_questions: true,
+          bonus_questions: true,
+        },
+      });
+      expect(quizRoundRepo.save).toHaveBeenCalledWith(quizRound);
+      expect(sigmaQuizService.computeQuizScores).toHaveBeenCalledWith(
+        quizRound.quizId,
+      );
+
+      expect(quizRound.schoolParticipations[0].score).toBe(25);
+      expect(quizRound.schoolParticipations[0].position).toBe(1);
+      expect(quizRound.schoolParticipations[1].score).toBe(10);
+      expect(quizRound.schoolParticipations[1].position).toBe(2);
+    });
+
+    it('should handle errors', async () => {
+      const errorMessage = 'An error occurred';
+      jest
+        .spyOn(service, 'findOneById')
+        .mockRejectedValueOnce(new Error(errorMessage));
+
+      await expect(service.computeRoundScores(roundId)).rejects.toThrow(
+        errorMessage,
+      );
+
+      expect(service.findOneById).toHaveBeenCalledWith(roundId, {
+        schoolParticipations: {
+          answered_questions: true,
+          bonus_questions: true,
+        },
       });
     });
   });
