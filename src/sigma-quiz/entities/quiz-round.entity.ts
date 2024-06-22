@@ -50,7 +50,7 @@ export class QuizRound extends CustomBaseEntity {
   @OneToMany(
     () => SchoolRoundParticipation,
     (schoolParticipation) => schoolParticipation.round,
-    { eager: true },
+    { eager: true, cascade: ["update", "remove"] },
   )
   public schoolParticipations: SchoolRoundParticipation[];
 

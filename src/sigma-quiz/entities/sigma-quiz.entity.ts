@@ -35,6 +35,7 @@ export class SigmaQuiz extends CustomBaseEntity {
   @OneToMany(
     () => SchoolQuizRegistration,
     (schoolRegistration) => schoolRegistration.quiz,
+    { cascade: ['update', 'remove'] },
   )
   public schoolRegistrations: SchoolQuizRegistration[];
 }

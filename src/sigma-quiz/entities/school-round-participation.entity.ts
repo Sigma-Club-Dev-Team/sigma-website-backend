@@ -24,6 +24,7 @@ export class SchoolRoundParticipation extends CustomBaseEntity {
 
   @ManyToOne(() => QuizRound, (round) => round.schoolParticipations, {
     onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
   })
   public round: QuizRound;
 
@@ -31,6 +32,12 @@ export class SchoolRoundParticipation extends CustomBaseEntity {
     onDelete: 'CASCADE',
   })
   public schoolRegistration: SchoolQuizRegistration;
+
+  @Column({ default: 0 })
+  public score: number;
+
+  @Column({ default: 0 })
+  public position: number;
 
   @OneToMany(() => QuizQuestion, (quiz_question) => quiz_question.answered_by)
   public answered_questions: QuizQuestion[];

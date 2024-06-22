@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
+import { DataSource, FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 import { QuizRound } from '../entities/quiz-round.entity';
 import { CreateQuizRoundDto } from '../dto/create-quiz-round.dto';
@@ -69,12 +69,18 @@ export class QuizRoundService {
     return await this.quizRoundRepo.find({ where: whereClause });
   }
 
-  async findOneById(id: string): Promise<QuizRound> {
-    const quizRound = await this.quizRoundRepo.findOne({ where: { id }, relations: {
+  async findOneById(
+    id: string,
+    relations: FindOptionsRelations<QuizRound> = {
       schoolParticipations: {
-        schoolRegistration: true
-      }
-    }});
+        schoolRegistration: true,
+      },
+    },
+  ): Promise<QuizRound> {
+    const quizRound = await this.quizRoundRepo.findOne({
+      where: { id },
+      relations: relations
+    });
     if (!quizRound) {
       throw new NotFoundException('Quiz Round with this id does not exist');
     }
@@ -124,7 +130,9 @@ export class QuizRoundService {
     try {
       const quizRound = await this.findOneById(roundId);
       if (quizRound.schoolParticipations.length >= quizRound.no_of_schools) {
-        throw new ConflictException(`Round allows a maximum of ${quizRound.no_of_schools} Schools`)
+        throw new ConflictException(
+          `Round allows a maximum of ${quizRound.no_of_schools} Schools`,
+        );
       }
       const schoolRegistration =
         await this.sigmaQuizService.fetchSchoolRegisterationForQuiz(
@@ -197,5 +205,42 @@ export class QuizRoundService {
     }
 
     return roundParticipation;
+  }
+
+  async computeRoundScores(roundId: string) {
+    const quizRound = await this.findOneById(roundId, {
+      schoolParticipations: {
+        answered_questions: true,
+        bonus_questions: true,
+      },
+    });
+    for (let roundParticipation of quizRound.schoolParticipations) {
+      let bonusMarks =
+        roundParticipation.bonus_questions?.length *
+        quizRound.marks_per_bonus_question;
+      let correctAnsCount =
+        roundParticipation.answered_questions.reduce<number>(
+          (currCount, currQues) => {
+            // Check if the current question was answered correctly
+            if (currQues.answered_correctly === true) {
+              // Increment the count if the answer is correct
+              return currCount + 1;
+            } else {
+              // Keep the count unchanged if the answer is incorrect
+              return currCount;
+            }
+          },
+          0,
+        );
+      let normalQuesScores = correctAnsCount * quizRound.marks_per_question;
+      roundParticipation.score = bonusMarks + normalQuesScores;
+    }
+
+    quizRound.schoolParticipations.sort((a, b) => b.score - a.score);
+    quizRound.schoolParticipations.forEach((roundPart, idx) => {
+      roundPart.position = idx + 1;
+    });
+    await this.quizRoundRepo.save(quizRound);
+    return await this.sigmaQuizService.computeQuizScores(quizRound.quizId);
   }
 }

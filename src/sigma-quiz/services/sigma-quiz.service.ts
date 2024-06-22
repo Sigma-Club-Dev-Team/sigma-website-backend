@@ -9,7 +9,7 @@ import { CreateSigmaQuizDto } from '../dto/create-sigma-quiz.dto';
 import { UpdateSigmaQuizDto } from '../dto/update-sigma-quiz.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SigmaQuiz } from '../entities/sigma-quiz.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsRelations, FindOptionsWhere, Repository } from 'typeorm';
 import { getYear } from 'date-fns';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
 import { QuizRoundService } from './quiz-round.service';
@@ -58,12 +58,17 @@ export class SigmaQuizService {
     return await this.sigmaQuizRepo.find({ where: whereClause });
   }
 
-  async findOneById(id: string): Promise<SigmaQuiz> {
-    const queryBuilder = this.sigmaQuizRepo
-      .createQueryBuilder('quiz')
-      .leftJoinAndSelect('quiz.rounds', 'rounds')
-      .setFindOptions({ where: { id } });
-    const sigmaQuiz = await queryBuilder.getOne();
+  async findOneById(
+    id: string,
+    relations?: FindOptionsRelations<SigmaQuiz>,
+  ): Promise<SigmaQuiz> {
+    const sigmaQuiz = this.sigmaQuizRepo.findOne({
+      where: { id },
+      relations: {
+        rounds: true,
+        ...relations,
+      },
+    });
 
     if (!sigmaQuiz) {
       throw new NotFoundException('Sigma Quiz with this id does not exist');
@@ -168,5 +173,50 @@ export class SigmaQuizService {
     }
 
     return schoolRegistration;
+  }
+
+  async fetchResults(quizId: string) {
+    const quiz = await this.findOneById(quizId, {
+      schoolRegistrations: {
+        rounds: {
+          answered_questions: true,
+          bonus_questions: true,
+        },
+      },
+      rounds: {
+        schoolParticipations: {
+          answered_questions: true,
+          bonus_questions: true,
+        },
+        questions: {
+          answered_by: { schoolRegistration: true },
+          bonus_to: { schoolRegistration: true },
+        },
+      },
+    });
+
+    return quiz;
+  }
+
+  async computeQuizScores(quizId: string) {
+    const quiz = await this.findOneById(quizId, {
+      schoolRegistrations: {
+        rounds: true
+      },
+    });
+    for (let school of quiz.schoolRegistrations) {
+      let schoolScore = 0;
+      for (let round of school.rounds) {
+        schoolScore += round.score;
+      }
+      school.score = schoolScore;
+    }
+
+    quiz.schoolRegistrations.sort((a, b) => b.score - a.score);
+    quiz.schoolRegistrations.forEach((roundPart, idx) => {
+      roundPart.position = idx + 1;
+    });
+    await this.sigmaQuizRepo.save(quiz);
+    return await this.fetchResults(quizId);
   }
 }

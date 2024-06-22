@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, EntityManager, Between, FindOptionsWhere } from 'typeorm';
 import { QuizQuestion } from '../entities/quiz-question.entity';
 import {
+  buildSigmaQuizMock,
   mockQuizQuestion,
   mockQuizRound,
   mockSchoolQuizRegistration,
@@ -272,6 +273,7 @@ describe('QuizQuestionService', () => {
     });
 
     it('should successfully mark a question as answered correctly', async () => {
+      const quiz = buildSigmaQuizMock();
       const markedQuestion = {
         ...question,
         answered_by: roundParticipation,
@@ -283,18 +285,19 @@ describe('QuizQuestionService', () => {
         .spyOn(quizRoundService, 'fetchSchoolParticipationForQuizRound')
         .mockResolvedValueOnce(roundParticipation);
       jest.spyOn(quizQuestionRepo, 'save').mockResolvedValueOnce(question);
-      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(markedQuestion);
+      jest.spyOn(quizRoundService, "computeRoundScores").mockResolvedValueOnce(quiz);
 
-      const result = await service.markQuestion(
+      await service.markQuestion(
         questionId,
         schoolId,
         answered_correctly,
       );
 
-      expect(result.answered_by).toEqual(roundParticipation);
-      expect(result.answered_correctly).toBe(answered_correctly);
-      expect(service.findOneById).toHaveBeenCalledTimes(2);
+      expect(question.answered_by).toEqual(roundParticipation);
+      expect(question.answered_correctly).toBe(answered_correctly);
+      expect(service.findOneById).toHaveBeenCalledTimes(1);
       expect(quizQuestionRepo.save).toHaveBeenCalledWith(markedQuestion);
+      expect(quizRoundService.computeRoundScores).toHaveBeenCalledWith(question.roundId);
     });
 
     it('should throw ConflictException if question is already answered by another schol', async () => {
@@ -381,14 +384,17 @@ describe('QuizQuestionService', () => {
         bonus_to: roundParticipation,
       });
 
-      const result = await service.assignBonusQuestion(questionId, schoolId);
+      await service.assignBonusQuestion(questionId, schoolId);
 
-      expect(result.bonus_to).toEqual(roundParticipation);
-      expect(service.findOneById).toHaveBeenCalledTimes(2);
+      expect(answeredQuestion.bonus_to).toEqual(roundParticipation);
+      expect(service.findOneById).toHaveBeenCalledTimes(1);
       expect(quizQuestionRepo.save).toHaveBeenCalledWith({
         ...answeredQuestion,
         bonus_to: roundParticipation,
       });
+      expect(quizRoundService.computeRoundScores).toHaveBeenCalledWith(
+        unansweredQuestion.roundId,
+      );
     });
 
     it('should throw ConflictException if question is not answered', async () => {

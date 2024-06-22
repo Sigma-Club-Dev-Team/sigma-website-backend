@@ -7,8 +7,10 @@ import {
   buildCreateSigmaQuizDtoMock,
   buildSigmaQuizMock,
   buildUpdateSigmaQuizDtoMock,
+  mockQuizQuestion,
   mockQuizRound,
   mockSchoolQuizRegistration,
+  mockSchoolRoundParticipation,
   mockSigmaQuizSchool,
 } from '../../test/factories/sigma-quiz.factory';
 import { PostgresErrorCode } from '../../database/postgres-errorcodes.enum';
@@ -152,7 +154,7 @@ describe('SigmaQuizService', () => {
 
       queryBuilderMock.getOne.mockResolvedValue(sigmaQuiz);
 
-      jest.spyOn(sigmaQuizRepo, 'findOneBy').mockResolvedValue(sigmaQuiz);
+      jest.spyOn(sigmaQuizRepo, 'findOne').mockResolvedValue(sigmaQuiz);
       expect(await service.findOneById(quizId)).toBe(sigmaQuiz);
     });
 
@@ -473,16 +475,145 @@ describe('SigmaQuizService', () => {
       const schoolId = 'school-id';
       const quiz = buildSigmaQuizMock({ id: quizId });
       const school = mockSigmaQuizSchool({ id: schoolId });
-      
+
       jest.spyOn(service, 'findOneById').mockResolvedValue(quiz);
       jest.spyOn(quizSchoolService, 'findOneById').mockResolvedValue(school);
-      jest
-        .spyOn(schoolRegistrationRepo, 'findOneBy')
-        .mockResolvedValue(null);
+      jest.spyOn(schoolRegistrationRepo, 'findOneBy').mockResolvedValue(null);
 
       await expect(
         service.fetchSchoolRegisterationForQuiz(quizId, schoolId),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('fetchResults', () => {
+    const quizId = 'quiz-id-1';
+    const mockQuiz = buildSigmaQuizMock({
+      id: quizId,
+      schoolRegistrations: [mockSchoolQuizRegistration({})],
+      rounds: [
+        mockQuizRound({
+          schoolParticipations: [
+            mockSchoolRoundParticipation(),
+            mockSchoolRoundParticipation(),
+          ],
+          questions: [mockQuizQuestion(), mockQuizQuestion()],
+        }),
+      ],
+    });
+
+    it('should fetch quiz results successfully', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(mockQuiz);
+
+      const result = await service.fetchResults(quizId);
+
+      expect(result).toEqual(mockQuiz);
+      expect(service.findOneById).toHaveBeenCalledWith(quizId, {
+        schoolRegistrations: {
+          rounds: {
+            answered_questions: true,
+            bonus_questions: true,
+          },
+        },
+        rounds: {
+          schoolParticipations: {
+            answered_questions: true,
+            bonus_questions: true,
+          },
+          questions: {
+            answered_by: { schoolRegistration: true },
+            bonus_to: { schoolRegistration: true },
+          },
+        },
+      });
+    });
+
+    it('should handle errors', async () => {
+      const errorMessage = 'An error occurred';
+      jest
+        .spyOn(service, 'findOneById')
+        .mockRejectedValueOnce(new Error(errorMessage));
+
+      await expect(service.fetchResults(quizId)).rejects.toThrow(errorMessage);
+
+      expect(service.findOneById).toHaveBeenCalledWith(quizId, {
+        schoolRegistrations: {
+          rounds: {
+            answered_questions: true,
+            bonus_questions: true,
+          },
+        },
+        rounds: {
+          schoolParticipations: {
+            answered_questions: true,
+            bonus_questions: true,
+          },
+          questions: {
+            answered_by: { schoolRegistration: true },
+            bonus_to: { schoolRegistration: true },
+          },
+        },
+      });
+    });
+  });
+
+  describe('computeQuizScores', () => {
+    const quizId = 'quiz-id-1';
+    const mockQuiz = buildSigmaQuizMock({
+      id: quizId,
+      schoolRegistrations: [
+        mockSchoolQuizRegistration({
+          rounds: [
+            mockSchoolRoundParticipation({ score: 10 }),
+            mockSchoolRoundParticipation({ score: 20 }),
+          ],
+          score: 0,
+          position: 0,
+        }),
+        mockSchoolQuizRegistration({
+          rounds: [
+            mockSchoolRoundParticipation({ score: 15 }),
+            mockSchoolRoundParticipation({ score: 10 }),
+          ],
+          score: 0,
+          position: 0,
+        }),
+      ],
+    });
+
+    it('should compute quiz scores correctly and update positions', async () => {
+      jest.spyOn(service, 'findOneById').mockResolvedValueOnce(mockQuiz);
+      jest.spyOn(sigmaQuizRepo, 'save').mockResolvedValueOnce(mockQuiz);
+
+      jest.spyOn(service, 'fetchResults').mockResolvedValueOnce(mockQuiz);
+
+      const result = await service.computeQuizScores(quizId);
+
+      expect(service.findOneById).toHaveBeenCalledWith(quizId, {
+        schoolRegistrations: { rounds: true },
+      });
+      expect(sigmaQuizRepo.save).toHaveBeenCalledWith(mockQuiz);
+      expect(service.fetchResults).toHaveBeenCalledWith(quizId);
+
+      expect(result.schoolRegistrations[0].score).toBe(30);
+      expect(result.schoolRegistrations[0].position).toBe(1);
+      expect(result.schoolRegistrations[1].score).toBe(25);
+      expect(result.schoolRegistrations[1].position).toBe(2);
+    });
+
+    it('should handle errors', async () => {
+      const errorMessage = 'An error occurred';
+      jest
+        .spyOn(service, 'findOneById')
+        .mockRejectedValueOnce(new Error(errorMessage));
+
+      await expect(service.computeQuizScores(quizId)).rejects.toThrow(
+        errorMessage,
+      );
+
+      expect(service.findOneById).toHaveBeenCalledWith(quizId, {
+        schoolRegistrations: { rounds: true },
+      });
     });
   });
 });

@@ -2,6 +2,7 @@ import { TestBed } from '@automock/jest';
 import { QuizQuestionController } from './quiz-question.controller';
 import { QuizQuestionService } from '../services/quiz-question.service';
 import {
+  buildSigmaQuizMock,
   mockAssignBonusQuestionDto,
   mockMarkQuestionDto,
   mockQuizQuestion,
@@ -30,7 +31,7 @@ describe('QuizQuestionController', () => {
     });
 
     it('should successfully mark a question', async () => {
-      const expectedResponse = mockQuizQuestion();
+      const expectedResponse = buildSigmaQuizMock();
 
       jest
         .spyOn(quizQuestionService, 'markQuestion')
@@ -74,7 +75,7 @@ describe('QuizQuestionController', () => {
     });
 
     it('should successfully assign bonus question', async () => {
-      const expectedResponse = mockQuizQuestion();
+      const expectedResponse = buildSigmaQuizMock();
 
       jest
         .spyOn(quizQuestionService, 'assignBonusQuestion')
