@@ -384,14 +384,17 @@ describe('QuizQuestionService', () => {
         bonus_to: roundParticipation,
       });
 
-      const result = await service.assignBonusQuestion(questionId, schoolId);
+      await service.assignBonusQuestion(questionId, schoolId);
 
-      expect(result.bonus_to).toEqual(roundParticipation);
-      expect(service.findOneById).toHaveBeenCalledTimes(2);
+      expect(answeredQuestion.bonus_to).toEqual(roundParticipation);
+      expect(service.findOneById).toHaveBeenCalledTimes(1);
       expect(quizQuestionRepo.save).toHaveBeenCalledWith({
         ...answeredQuestion,
         bonus_to: roundParticipation,
       });
+      expect(quizRoundService.computeRoundScores).toHaveBeenCalledWith(
+        unansweredQuestion.roundId,
+      );
     });
 
     it('should throw ConflictException if question is not answered', async () => {

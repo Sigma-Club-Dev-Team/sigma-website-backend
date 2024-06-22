@@ -75,7 +75,7 @@ describe('QuizQuestionController', () => {
     });
 
     it('should successfully assign bonus question', async () => {
-      const expectedResponse = mockQuizQuestion();
+      const expectedResponse = buildSigmaQuizMock();
 
       jest
         .spyOn(quizQuestionService, 'assignBonusQuestion')

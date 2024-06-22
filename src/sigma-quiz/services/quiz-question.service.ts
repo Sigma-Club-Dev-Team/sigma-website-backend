@@ -184,6 +184,6 @@ export class QuizQuestionService {
 
     question.bonus_to = roundParticipation;
     await this.quizQuestionRepo.save(question);
-    return await this.findOneById(questionId);
+    return await this.quizRoundService.computeRoundScores(question.roundId);
   }
 }
