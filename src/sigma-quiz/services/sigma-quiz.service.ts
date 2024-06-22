@@ -62,7 +62,7 @@ export class SigmaQuizService {
     id: string,
     relations?: FindOptionsRelations<SigmaQuiz>,
   ): Promise<SigmaQuiz> {
-    const sigmaQuiz = this.sigmaQuizRepo.findOne({
+    const sigmaQuiz = await this.sigmaQuizRepo.findOne({
       where: { id },
       relations: {
         rounds: true,
