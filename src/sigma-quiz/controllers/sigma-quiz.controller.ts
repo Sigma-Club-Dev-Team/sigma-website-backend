@@ -84,6 +84,13 @@ export class SigmaQuizController {
     return this.sigmaQuizService.fetchSchoolsRegisteredForQuiz(quizId);
   }
 
+  @Get(':id/results')
+  fetchResults(
+    @Param('id', new ParseUUIDPipe()) quizId: string,
+  ) {
+    return this.sigmaQuizService.fetchResults(quizId);
+  }
+
   @Roles(Role.SuperAdmin)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':quizId/schools/:schoolId')

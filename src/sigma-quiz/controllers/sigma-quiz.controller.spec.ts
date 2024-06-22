@@ -177,7 +177,7 @@ describe('SigmaQuizController', () => {
     });
   });
 
-  describe('fetchScholsRegisteredForQuiz', () => {
+  describe('fetchSchoolsRegisteredForQuiz', () => {
     it('should be defined', () => {
       expect(controller).toBeDefined();
     });
@@ -228,5 +228,32 @@ describe('SigmaQuizController', () => {
       });
     });
 
+  });
+
+  describe('fetchResults', () => {
+    const quizId = 'some-uuid';
+
+    it('should call SigmaQuizService.fetchResults with the correct ID', async () => {
+      const result = buildSigmaQuizMock();
+      jest.spyOn(sigmaQuizService, 'fetchResults').mockResolvedValue(result);
+      
+
+      const response = await controller.fetchResults(quizId);
+
+      expect(sigmaQuizService.fetchResults).toHaveBeenCalledWith(quizId);
+      expect(response).toBe(result);
+    });
+
+    it('should throw an error if the service throws an error', async () => {
+      jest
+        .spyOn(sigmaQuizService, 'fetchResults')
+        .mockRejectedValue(new NotFoundException('Quiz not found'));
+
+      await expect(controller.fetchResults(quizId)).rejects.toThrow(
+        NotFoundException,
+      );
+
+      expect(sigmaQuizService.fetchResults).toHaveBeenCalledWith(quizId);
+    });
   });
 });
