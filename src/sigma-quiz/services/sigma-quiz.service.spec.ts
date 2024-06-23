@@ -511,12 +511,6 @@ describe('SigmaQuizService', () => {
       expect(service.findOneById).toHaveBeenCalledWith(quizId, {
         schoolRegistrations: {
           rounds: {
-            round: {
-              questions: {
-                answered_by: true,
-                bonus_to: true,
-              },
-            },
             answered_questions: true,
             bonus_questions: true,
           },
@@ -545,12 +539,6 @@ describe('SigmaQuizService', () => {
       expect(service.findOneById).toHaveBeenCalledWith(quizId, {
         schoolRegistrations: {
           rounds: {
-            round: {
-              questions: {
-                answered_by: true,
-                bonus_to: true,
-              },
-            },
             answered_questions: true,
             bonus_questions: true,
           },
