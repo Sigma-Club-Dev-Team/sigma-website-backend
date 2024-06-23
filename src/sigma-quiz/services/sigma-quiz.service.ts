@@ -179,12 +179,6 @@ export class SigmaQuizService {
     const quiz = await this.findOneById(quizId, {
       schoolRegistrations: {
         rounds: {
-          round: {
-            questions: {
-              answered_by: true,
-              bonus_to: true
-            }
-          },
           answered_questions: true,
           bonus_questions: true,
         },
