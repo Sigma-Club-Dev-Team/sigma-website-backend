@@ -6,6 +6,7 @@ import { Role } from '../constants/enums';
 import { UsersService } from './users.service';
 import { RequestWithUser } from '../auth/interfaces/request-with-user.interface';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 
 @Controller('users')
 export class UsersController {
@@ -35,7 +36,7 @@ export class UsersController {
   @Put('/me')
   async updateMyProfile(
     @Req() req: RequestWithUser,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateUserDto: UpdateMyProfileDto,
   ) {
     return await this.userService.update(req.user.id, updateUserDto);
   }
