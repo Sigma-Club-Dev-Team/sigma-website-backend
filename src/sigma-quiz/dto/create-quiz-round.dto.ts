@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsPositive, IsUUID, Min } from 'class-validator';
 import { IsValidNumberOfQuestions } from '../decorators/is-valid-number-of-school';
 
 export class CreateQuizRoundDto {
@@ -21,6 +21,6 @@ export class CreateQuizRoundDto {
   @IsPositive()
   marks_per_question: number;
 
-  @IsPositive()
+  @Min(0)
   marks_per_bonus_question: number;
 }
