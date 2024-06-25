@@ -1,4 +1,4 @@
-import { IsDefined, IsNotEmpty, IsPositive, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsPositive, IsUUID, Min } from 'class-validator';
 import { CustomBaseEntity } from '../../database/base.entity';
 import { Column, Entity, ManyToOne, OneToMany, Unique } from 'typeorm';
 import { SigmaQuiz } from './sigma-quiz.entity';
@@ -44,7 +44,7 @@ export class QuizRound extends CustomBaseEntity {
   marks_per_question: number;
 
   @Column()
-  @IsPositive()
+  @Min(0)
   marks_per_bonus_question: number;
 
   @OneToMany(
