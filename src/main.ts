@@ -15,6 +15,7 @@ async function bootstrap() {
       'https://sigma-quiz.netlify.app',
       'http://localhost:3000',
       'https://sigmaclubui.ng',
+      /.*sigma.*/i,
     ],
   });
   app.setGlobalPrefix(EnvVars.BASE_URL);
