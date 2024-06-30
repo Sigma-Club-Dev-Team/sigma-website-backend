@@ -22,13 +22,11 @@ export class SchoolQuizRegistration extends CustomBaseEntity {
   public schoolId: string;
 
   @ManyToOne(() => SigmaQuiz, (quiz) => quiz.schoolRegistrations, {
-    eager: true,
     onDelete: 'CASCADE',
   })
   public quiz: SigmaQuiz;
 
   @ManyToOne(() => SigmaQuizSchool, {
-    eager: true,
     onDelete: 'CASCADE',
   })
   public school: SigmaQuizSchool;
@@ -36,7 +34,6 @@ export class SchoolQuizRegistration extends CustomBaseEntity {
   @OneToMany(
     () => SchoolRoundParticipation,
     (schoolParticipation) => schoolParticipation.schoolRegistration,
-    { eager: true },
   )
   public rounds: SchoolRoundParticipation[];
 
