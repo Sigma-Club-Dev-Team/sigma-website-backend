@@ -178,6 +178,7 @@ export class SigmaQuizService {
   async fetchResults(quizId: string) {
     const quiz = await this.findOneById(quizId, {
       schoolRegistrations: {
+        school: true,
         rounds: {
           answered_questions: true,
           bonus_questions: true,

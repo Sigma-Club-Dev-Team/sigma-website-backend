@@ -510,6 +510,7 @@ describe('SigmaQuizService', () => {
       expect(result).toEqual(mockQuiz);
       expect(service.findOneById).toHaveBeenCalledWith(quizId, {
       schoolRegistrations: {
+        school: true, 
         rounds: {
           answered_questions: true,
           bonus_questions: true,
@@ -533,19 +534,21 @@ describe('SigmaQuizService', () => {
       await expect(service.fetchResults(quizId)).rejects.toThrow(errorMessage);
 
       expect(service.findOneById).toHaveBeenCalledWith(quizId, {
-      schoolRegistrations: {
+        schoolRegistrations: {
+          school: true,
+          rounds: {
+            answered_questions: true,
+            bonus_questions: true,
+          },
+        },
         rounds: {
-          answered_questions: true,
-          bonus_questions: true,
+          schoolParticipations: true,
+          questions: {
+            answered_by: true,
+            bonus_to: true,
+          },
         },
-      },
-      rounds: {
-        schoolParticipations: true,
-        questions: {
-          answered_by: true,
-          bonus_to: true,
-        },
-      }});
+      });
     });
   });
 
