@@ -184,17 +184,13 @@ export class SigmaQuizService {
         },
       },
       rounds: {
-        schoolParticipations: {
-          answered_questions: true,
-          bonus_questions: true,
-        },
+        schoolParticipations: true,
         questions: {
-          answered_by: { schoolRegistration: true },
-          bonus_to: { schoolRegistration: true },
+          answered_by: true,
+          bonus_to: true,
         },
       },
     });
-
     return quiz;
   }
 

@@ -24,7 +24,6 @@ export class QuizQuestion extends CustomBaseEntity {
   @ManyToOne(() => SchoolRoundParticipation, {
     onDelete: 'CASCADE',
     nullable: true,
-    eager: true,
   })
   public answered_by?: SchoolRoundParticipation;
 
@@ -35,7 +34,6 @@ export class QuizQuestion extends CustomBaseEntity {
   @ManyToOne(() => SchoolRoundParticipation, {
     onDelete: 'CASCADE',
     nullable: true,
-    eager: true,
   })
   public bonus_to?: SchoolRoundParticipation;
 }

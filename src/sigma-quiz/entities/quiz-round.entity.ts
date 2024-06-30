@@ -50,12 +50,12 @@ export class QuizRound extends CustomBaseEntity {
   @OneToMany(
     () => SchoolRoundParticipation,
     (schoolParticipation) => schoolParticipation.round,
-    { eager: true, cascade: ["update", "remove"] },
+    { 
+      cascade: ["update", "remove"] },
   )
   public schoolParticipations: SchoolRoundParticipation[];
 
   @OneToMany(() => QuizQuestion, (quiz_question) => quiz_question.round, {
-    eager: true,
   })
   public questions: QuizQuestion[];
 }
