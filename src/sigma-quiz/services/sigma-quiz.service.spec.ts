@@ -509,23 +509,19 @@ describe('SigmaQuizService', () => {
 
       expect(result).toEqual(mockQuiz);
       expect(service.findOneById).toHaveBeenCalledWith(quizId, {
-        schoolRegistrations: {
-          rounds: {
-            answered_questions: true,
-            bonus_questions: true,
-          },
-        },
+      schoolRegistrations: {
         rounds: {
-          schoolParticipations: {
-            answered_questions: true,
-            bonus_questions: true,
-          },
-          questions: {
-            answered_by: { schoolRegistration: true },
-            bonus_to: { schoolRegistration: true },
-          },
+          answered_questions: true,
+          bonus_questions: true,
         },
-      });
+      },
+      rounds: {
+        schoolParticipations: true,
+        questions: {
+          answered_by: true,
+          bonus_to: true,
+        },
+      }});
     });
 
     it('should handle errors', async () => {
@@ -537,23 +533,19 @@ describe('SigmaQuizService', () => {
       await expect(service.fetchResults(quizId)).rejects.toThrow(errorMessage);
 
       expect(service.findOneById).toHaveBeenCalledWith(quizId, {
-        schoolRegistrations: {
-          rounds: {
-            answered_questions: true,
-            bonus_questions: true,
-          },
-        },
+      schoolRegistrations: {
         rounds: {
-          schoolParticipations: {
-            answered_questions: true,
-            bonus_questions: true,
-          },
-          questions: {
-            answered_by: { schoolRegistration: true },
-            bonus_to: { schoolRegistration: true },
-          },
+          answered_questions: true,
+          bonus_questions: true,
         },
-      });
+      },
+      rounds: {
+        schoolParticipations: true,
+        questions: {
+          answered_by: true,
+          bonus_to: true,
+        },
+      }});
     });
   });
 
