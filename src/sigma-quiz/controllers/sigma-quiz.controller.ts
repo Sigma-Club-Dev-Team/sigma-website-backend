@@ -17,6 +17,7 @@ import { Role } from '../../constants/enums';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import RolesGuard from '../../auth/guards/role.guard';
 import { RegisterSchoolForQuizDto } from '../dto/register-school-for-quiz-dto';
+import { UpdateQuizStatusDto } from '../dto/update-quiz-status.dto';
 
 @Controller('sigma-quiz')
 export class SigmaQuizController {
@@ -85,9 +86,7 @@ export class SigmaQuizController {
   }
 
   @Get(':id/results')
-  fetchResults(
-    @Param('id', new ParseUUIDPipe()) quizId: string,
-  ) {
+  fetchResults(@Param('id', new ParseUUIDPipe()) quizId: string) {
     return this.sigmaQuizService.fetchResults(quizId);
   }
 
@@ -104,5 +103,13 @@ export class SigmaQuizController {
       message: 'Successful',
       registered_schools: remainingRegisteredSchools,
     };
+  }
+
+  @Put(':id/status')
+  updateQuizStatus(
+    @Param('id', new ParseUUIDPipe()) quizId: string,
+    @Body() updateQuizStatus: UpdateQuizStatusDto,
+  ) {
+    return this.sigmaQuizService.updateQuizStatus(quizId, updateQuizStatus.new_status);
   }
 }

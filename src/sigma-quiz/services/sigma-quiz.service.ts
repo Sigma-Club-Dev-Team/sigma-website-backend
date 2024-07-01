@@ -16,6 +16,7 @@ import { QuizRoundService } from './quiz-round.service';
 import { QuizRound } from '../entities/quiz-round.entity';
 import { SchoolQuizRegistration } from '../entities/school-registration.entity';
 import { SigmaQuizSchoolService } from './sigma-quiz-school.service';
+import { QuizStatus } from '../../constants/enums';
 
 @Injectable()
 export class SigmaQuizService {
@@ -215,5 +216,12 @@ export class SigmaQuizService {
     });
     await this.sigmaQuizRepo.save(quiz);
     return await this.fetchResults(quizId);
+  }
+
+  async updateQuizStatus(quizId: string, newStatus: QuizStatus) {
+    const quiz = await this.findOneById(quizId);
+    quiz.status = newStatus;
+    await this.sigmaQuizRepo.save(quiz);
+    return await this.fetchResults(quiz.id);
   }
 }

@@ -1,8 +1,9 @@
-import { IsDateString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
 import { CustomBaseEntity } from '../../database/base.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { QuizRound } from './quiz-round.entity';
 import { SchoolQuizRegistration } from './school-registration.entity';
+import { QuizStatus } from '../../constants/enums';
 
 @Entity()
 export class SigmaQuiz extends CustomBaseEntity {
@@ -28,6 +29,10 @@ export class SigmaQuiz extends CustomBaseEntity {
   @Column({ type: 'date', unique: true })
   @IsDateString()
   date: Date;
+
+  @Column({type: "enum", enum: QuizStatus, default: QuizStatus.Pending})
+  @IsEnum(QuizStatus)
+  status: QuizStatus
 
   @OneToMany(() => QuizRound, (photo) => photo.quiz)
   rounds: QuizRound[];

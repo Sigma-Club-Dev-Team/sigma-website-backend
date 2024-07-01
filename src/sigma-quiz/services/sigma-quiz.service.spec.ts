@@ -18,6 +18,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { QuizRoundService } from './quiz-round.service';
 import { SigmaQuizSchoolService } from './sigma-quiz-school.service';
 import { SchoolQuizRegistration } from '../entities/school-registration.entity';
+import { QuizStatus } from '../../constants/enums';
 
 describe('SigmaQuizService', () => {
   let service: SigmaQuizService;
@@ -611,4 +612,66 @@ describe('SigmaQuizService', () => {
       });
     });
   });
+
+   describe('updateQuizStatus', () => {
+     it('should successfully update the quiz status and return the updated results', async () => {
+       const quizId = 'test-quiz-id';
+       const newStatus = QuizStatus.InProgress;
+
+       const quiz = buildSigmaQuizMock({ id: quizId, status: QuizStatus.InProgress });
+       const updatedQuiz = buildSigmaQuizMock({ id: quizId, status: newStatus });
+
+       jest.spyOn(service, 'findOneById').mockResolvedValue(quiz);
+       jest.spyOn(sigmaQuizRepo, 'save').mockResolvedValue(updatedQuiz);
+       jest.spyOn(service, 'fetchResults').mockResolvedValue(updatedQuiz);
+
+       const result = await service.updateQuizStatus(quizId, newStatus);
+
+       expect(service.findOneById).toHaveBeenCalledWith(quizId);
+       expect(sigmaQuizRepo.save).toHaveBeenCalledWith({
+         ...quiz,
+         status: newStatus,
+       });
+       expect(service.fetchResults).toHaveBeenCalledWith(quiz.id);
+       expect(result).toEqual(updatedQuiz);
+     });
+
+     it('should throw an error if findOneById throws an error', async () => {
+       const quizId = 'test-quiz-id';
+       const newStatus = QuizStatus.Completed;
+
+       jest
+         .spyOn(service, 'findOneById')
+         .mockRejectedValue(new Error('Quiz not found'));
+         jest.spyOn(service, 'fetchResults');
+
+       await expect(
+         service.updateQuizStatus(quizId, newStatus),
+       ).rejects.toThrow('Quiz not found');
+       expect(service.findOneById).toHaveBeenCalledWith(quizId);
+       expect(sigmaQuizRepo.save).not.toHaveBeenCalled();
+       expect(service.fetchResults).not.toHaveBeenCalled();
+     });
+
+     it('should throw an error if save throws an error', async () => {
+       const quizId = 'test-quiz-id';
+       const newStatus = QuizStatus.Completed;
+
+       const quiz = buildSigmaQuizMock({ id: quizId, status: QuizStatus.InProgress })
+
+       jest.spyOn(service, 'findOneById').mockResolvedValue(quiz);
+       jest.spyOn(sigmaQuizRepo, 'save').mockRejectedValue(new Error('Save failed'));
+       jest.spyOn(service, 'fetchResults');
+
+       await expect(
+         service.updateQuizStatus(quizId, newStatus),
+       ).rejects.toThrow('Save failed');
+       expect(service.findOneById).toHaveBeenCalledWith(quizId);
+       expect(sigmaQuizRepo.save).toHaveBeenCalledWith({
+         ...quiz,
+         status: newStatus,
+       });
+       expect(service.fetchResults).not.toHaveBeenCalled();
+     });
+   });
 });

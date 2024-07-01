@@ -13,6 +13,8 @@ import { SchoolRoundParticipation } from '../../sigma-quiz/entities/school-round
 import { QuizQuestion } from '../../sigma-quiz/entities/quiz-question.entity';
 import { MarkQuestionDto } from '../../sigma-quiz/dto/mark-question.dto';
 import { AssignBonusQuestionDto } from '../../sigma-quiz/dto/assign-bonus-question.dto';
+import { QuizStatus } from '../../constants/enums';
+import { UpdateQuizStatusDto } from '../../sigma-quiz/dto/update-quiz-status.dto';
 
 export const buildSigmaQuizMock = (inputs?: Partial<SigmaQuiz>): SigmaQuiz => {
   return {
@@ -20,6 +22,7 @@ export const buildSigmaQuizMock = (inputs?: Partial<SigmaQuiz>): SigmaQuiz => {
     year: 2023,
     title: 'Mock Sigma Quiz',
     description: 'This is a mock description',
+    status: QuizStatus.Pending,
     date: new Date(),
     created_at: new Date(),
     updated_at: new Date(),
@@ -36,6 +39,7 @@ export function buildCreateSigmaQuizDtoMock(
     title: 'Mock Sigma Quiz',
     description: 'This is a mock description',
     date: new Date(),
+    status: QuizStatus.Pending,
     ...partial,
   };
 }
@@ -212,4 +216,11 @@ export function mockAssignBonusQuestionDto(
     school_id: 'mock-school-id',
     ...partial,
   };
+}
+
+export function mockUpdateQuizStatusDto (partial?: Partial<UpdateQuizStatusDto>) : UpdateQuizStatusDto {
+  return {
+    new_status: QuizStatus.InProgress,
+    ...partial,
+  }
 }
