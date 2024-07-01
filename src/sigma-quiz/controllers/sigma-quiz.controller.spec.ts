@@ -8,8 +8,10 @@ import {
   mockQuizRound,
   mockRegisterSchForQuizDto,
   mockSchoolQuizRegistration,
+  mockUpdateQuizStatusDto,
 } from '../../test/factories/sigma-quiz.factory';
 import { NotFoundException } from '@nestjs/common';
+import { QuizStatus } from '../../constants/enums';
 
 describe('SigmaQuizController', () => {
   let controller: SigmaQuizController;
@@ -254,6 +256,51 @@ describe('SigmaQuizController', () => {
       );
 
       expect(sigmaQuizService.fetchResults).toHaveBeenCalledWith(quizId);
+    });
+  });
+
+  describe('updateQuizStatus', () => {
+    it('should successfully update the quiz status', async () => {
+      const quizId = 'test-quiz-id';
+      const updateQuizStatusDto = mockUpdateQuizStatusDto({
+        new_status: QuizStatus.InProgress,
+      });
+      const updatedQuiz = buildSigmaQuizMock({
+        id: quizId,
+        status: updateQuizStatusDto.new_status
+      });
+
+      jest.spyOn(sigmaQuizService, 'updateQuizStatus').mockResolvedValue(updatedQuiz);
+
+      const result = await controller.updateQuizStatus(
+        quizId,
+        updateQuizStatusDto,
+      );
+
+      expect(sigmaQuizService.updateQuizStatus).toHaveBeenCalledWith(
+        quizId,
+        updateQuizStatusDto.new_status,
+      );
+      expect(result).toEqual(updatedQuiz);
+    });
+
+    it('should throw an error if updateQuizStatus throws an error', async () => {
+      const quizId = 'test-quiz-id';
+      const updateQuizStatusDto = mockUpdateQuizStatusDto({
+        new_status: QuizStatus.InProgress,
+      });
+
+      jest
+        .spyOn(sigmaQuizService, 'updateQuizStatus')
+        .mockRejectedValue(new Error('Update failed'));
+
+      await expect(
+        controller.updateQuizStatus(quizId, updateQuizStatusDto),
+      ).rejects.toThrow('Update failed');
+      expect(sigmaQuizService.updateQuizStatus).toHaveBeenCalledWith(
+        quizId,
+        updateQuizStatusDto.new_status,
+      );
     });
   });
 });

@@ -3,3 +3,9 @@ export enum Role {
   QuizMaster = 'quiz-master',
   Adhoc = 'adhoc',
 }
+
+export enum QuizStatus {
+  Pending = 'pending',
+  InProgress = "in-progress",
+  Completed = "completed"
+}
