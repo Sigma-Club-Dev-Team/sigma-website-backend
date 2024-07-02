@@ -114,18 +114,18 @@ export class QuizQuestionService {
         schoolId,
       );
 
-    /** Check if Question already marked as answered by another school*/
-    if (
-      question.answered_by &&
-      question.answered_by.id !== roundParticipation.id
-    ) {
-      throw new ConflictException(
-        `Question already marked as Answered by ${
-          question.answered_by?.schoolRegistration?.school?.name ??
-          'Another School'
-        }`,
-      );
-    }
+    // /** Check if Question already marked as answered by another school*/
+    // if (
+    //   question.answered_by &&
+    //   question.answered_by.id !== roundParticipation.id
+    // ) {
+    //   throw new ConflictException(
+    //     `Question already marked as Answered by ${
+    //       question.answered_by?.schoolRegistration?.school?.name ??
+    //       'Another School'
+    //     }`,
+    //   );
+    // }
 
     question.answered_by = roundParticipation;
     question.answered_correctly = answered_correctly;
