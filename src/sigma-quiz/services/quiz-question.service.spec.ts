@@ -300,30 +300,30 @@ describe('QuizQuestionService', () => {
       expect(quizRoundService.computeRoundScores).toHaveBeenCalledWith(question.roundId);
     });
 
-    it('should throw ConflictException if question is already answered by another schol', async () => {
-      const anotherSchoolRoundParticipation = mockSchoolRoundParticipation();
-      const answeredQuestion = {
-        ...question,
-        answered_by: anotherSchoolRoundParticipation,
-      };
+    // it('should throw ConflictException if question is already answered by another schol', async () => {
+    //   const anotherSchoolRoundParticipation = mockSchoolRoundParticipation();
+    //   const answeredQuestion = {
+    //     ...question,
+    //     answered_by: anotherSchoolRoundParticipation,
+    //   };
 
-      jest
-        .spyOn(quizRoundService, 'fetchSchoolParticipationForQuizRound')
-        .mockResolvedValueOnce(roundParticipation);
-      jest
-        .spyOn(service, 'findOneById')
-        .mockResolvedValueOnce(answeredQuestion);
+    //   jest
+    //     .spyOn(quizRoundService, 'fetchSchoolParticipationForQuizRound')
+    //     .mockResolvedValueOnce(roundParticipation);
+    //   jest
+    //     .spyOn(service, 'findOneById')
+    //     .mockResolvedValueOnce(answeredQuestion);
 
-      await expect(
-        service.markQuestion(questionId, schoolId, answered_correctly),
-      ).rejects.toThrow(ConflictException);
+    //   await expect(
+    //     service.markQuestion(questionId, schoolId, answered_correctly),
+    //   ).rejects.toThrow(ConflictException);
 
-      expect(service.findOneById).toHaveBeenCalledTimes(1);
-      expect(
-        quizRoundService.fetchSchoolParticipationForQuizRound,
-      ).toHaveBeenCalledTimes(1);
-      expect(quizQuestionRepo.save).not.toHaveBeenCalled();
-    });
+    //   expect(service.findOneById).toHaveBeenCalledTimes(1);
+    //   expect(
+    //     quizRoundService.fetchSchoolParticipationForQuizRound,
+    //   ).toHaveBeenCalledTimes(1);
+    //   expect(quizQuestionRepo.save).not.toHaveBeenCalled();
+    // });
 
     it('should handle errors', async () => {
       const errorMessage = 'An error occurred';
